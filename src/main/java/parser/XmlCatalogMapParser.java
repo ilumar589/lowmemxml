@@ -27,7 +27,9 @@ public class XmlCatalogMapParser {
 
         if (startCatalogNode.isRoot() && !startCatalogNode.hasChildren()) {
             catalogNodeMap.remove(startCatalogNode.getUniqueIdentifier());
-            return startCatalogNode;
+            CatalogNode returnCatalog = new CatalogNode(startCatalogNode);
+            startCatalogNode = null;
+            return returnCatalog;
         }
 
         if (startCatalogNode.isRoot()) {

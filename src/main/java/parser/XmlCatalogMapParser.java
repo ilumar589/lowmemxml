@@ -9,7 +9,7 @@ public class XmlCatalogMapParser {
 
     private Map<String, CatalogNode> catalogNodeMap;
 
-    private CatalogNode lastReadCatalogNode;
+    private CatalogNode startCatalogNode;
 
     public XmlCatalogMapParser(XmlWoodStockCatalogParser xmlWoodStockCatalogParser) {
         this.xmlWoodStockCatalogParser = xmlWoodStockCatalogParser;
@@ -21,17 +21,17 @@ public class XmlCatalogMapParser {
     }
 
     public CatalogNode readNode() {
-        if (lastReadCatalogNode == null) {
-            lastReadCatalogNode = xmlWoodStockCatalogParser.readNode();
+        if (startCatalogNode == null) {
+            startCatalogNode = xmlWoodStockCatalogParser.readNode();
         }
 
-        if (lastReadCatalogNode.isRoot() && !lastReadCatalogNode.hasChildren()) {
-            catalogNodeMap.remove(lastReadCatalogNode.getUniqueIdentifier());
-            return lastReadCatalogNode;
+        if (startCatalogNode.isRoot() && !startCatalogNode.hasChildren()) {
+            catalogNodeMap.remove(startCatalogNode.getUniqueIdentifier());
+            return startCatalogNode;
         }
 
-        if (lastReadCatalogNode.isRoot()) {
-            return parseNode(lastReadCatalogNode, null);
+        if (startCatalogNode.isRoot()) {
+            return parseNode(startCatalogNode, null);
         }
 
         return null;
@@ -42,6 +42,13 @@ public class XmlCatalogMapParser {
             previousNode.removeDependency(currentNode.getUniqueIdentifier());
             catalogNodeMap.remove(currentNode.getUniqueIdentifier());
             return currentNode;
+        } else if (!currentNode.hasChildren() && !currentNode.hasBeenRead()) {
+            CatalogNode tmpLastRead = xmlWoodStockCatalogParser.readNode();
+            if (currentNode.getUniqueIdentifier().equals(tmpLastRead.getUniqueIdentifier())) {
+                catalogNodeMap.remove(tmpLastRead.getUniqueIdentifier());
+                return tmpLastRead;
+            }
+            return null;
         }
 
         Optional<String> childNodeUniqueIdentifier = currentNode.getNodeDependencies().stream().findFirst();

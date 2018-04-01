@@ -5,27 +5,20 @@ import java.util.Map;
 
 public class XmlCatalogIterator implements Iterator<CatalogNode>{
 
-	private XmlWoodStockCatalogParser parser;
-
-	private CatalogNode nextNode;
+	private XmlCatalogMapParser catalogNodeMapParser;
 
 	public XmlCatalogIterator(XmlWoodStockConfig config, Map<String, CatalogNode> catalogNodeMap) {
-		this.parser = new XmlWoodStockCatalogParser(config, catalogNodeMap);
-		this.nextNode = next();
+		this.catalogNodeMapParser = new XmlCatalogMapParser(new XmlWoodStockCatalogParser(config, catalogNodeMap));
 	}
 
 
 	@Override
 	public boolean hasNext() {
-		if (nextNode == null) {
-			return false;
-		}
-
-		return true;
+		return catalogNodeMapParser.hasNext();
 	}
 
 	@Override
 	public CatalogNode next() {
-		return parser.readNode();
+		return catalogNodeMapParser.readNode();
 	}
 }

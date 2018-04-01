@@ -144,7 +144,7 @@ public class XmlWoodStockIndexer {
 		}
 
 		private CatalogNode generateNode(String uniqueIdentifierValue, boolean isRootNode) {
-			CatalogNode catalogNode = new CatalogNode(isRootNode);
+			CatalogNode catalogNode = new CatalogNode(uniqueIdentifierValue,isRootNode);
 			nodeMap.putIfAbsent(uniqueIdentifierValue, catalogNode);
 
 			return catalogNode;

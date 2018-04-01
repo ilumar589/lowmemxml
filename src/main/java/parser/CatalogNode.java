@@ -7,17 +7,44 @@ import java.util.Collection;
 
 public class CatalogNode {
 
+	private String uniqueIdentifier;
 	private boolean isRoot;
 	private Node content;
-	private Collection<String> nodeDependecies;
+	private Node baseContent;
+	private Collection<String> nodeDependencies;
 
-	public CatalogNode(boolean isRoot) {
+	public CatalogNode(String uniqueIdentifier, boolean isRoot) {
+		this.uniqueIdentifier = uniqueIdentifier;
 		this.isRoot = isRoot;
-		this.nodeDependecies = new ArrayList<>();
+		this.nodeDependencies = new ArrayList<>();
+	}
+
+	public CatalogNode(CatalogNode catalogNode) {
+		this.uniqueIdentifier = catalogNode.getUniqueIdentifier();
+		this.isRoot = catalogNode.isRoot();
+		this.content = catalogNode.getContent();
+		this.baseContent = catalogNode.getBaseContent();
+		this.nodeDependencies = catalogNode.getNodeDependencies();
 	}
 
 	public void addDependency(String index) {
-		nodeDependecies.add(index);
+		nodeDependencies.add(index);
+	}
+
+	public void removeDependency(String uniqueIdentifier) {
+		if (!nodeDependencies.contains(uniqueIdentifier)) {
+			try {
+				throw new Exception("Identifer " + uniqueIdentifier + " not in dependency list for node " + this.uniqueIdentifier);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		nodeDependencies.remove(uniqueIdentifier);
+	}
+
+	public Collection<String> getNodeDependencies() {
+		return nodeDependencies;
 	}
 
 	public void setContent(Node content) {
@@ -29,7 +56,7 @@ public class CatalogNode {
 	}
 
 	public boolean hasChildren() {
-		return !nodeDependecies.isEmpty();
+		return !nodeDependencies.isEmpty();
 	}
 
 	public boolean isRoot() {
@@ -39,4 +66,27 @@ public class CatalogNode {
 	public void setRoot(boolean root) {
 		isRoot = root;
 	}
+
+	public boolean hasBeenRead() {
+		return this.content != null;
+	}
+
+	public Node getBaseContent() {
+		return baseContent;
+	}
+
+	public void setBaseContent(Node baseContent) {
+		this.baseContent = baseContent;
+	}
+
+	public String getUniqueIdentifier() {
+		return uniqueIdentifier;
+	}
+
+	public void setUniqueIdentifier(String uniqueIdentifier) {
+		this.uniqueIdentifier = uniqueIdentifier;
+	}
+
+
+
 }

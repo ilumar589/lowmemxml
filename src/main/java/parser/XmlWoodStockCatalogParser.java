@@ -83,7 +83,7 @@ public class XmlWoodStockCatalogParser {
 			e.printStackTrace();
 		}
 
-		return null;
+		return lastReadCatalogNode;
 	}
 
 	public Map<String, CatalogNode> getCatalogNodeMap() {

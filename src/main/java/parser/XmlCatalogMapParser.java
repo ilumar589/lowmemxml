@@ -27,24 +27,17 @@ public class XmlCatalogMapParser {
 
 
     public CatalogNode readNode() {
-        CatalogNode catalogNode = xmlWoodStockCatalogParser.readNode();
+        CatalogNode catalogNode = getNode();
 
-        if (catalogNode != null) {
-            if (!catalogNode.isRoot()) {
-                visitedNodes.add(catalogNode.getUniqueIdentifier());
-            } else {
-                unfinishedRoots.push(catalogNode.getUniqueIdentifier());
-            }
-        }
         processUnfinishedRoots(catalogNode);
 
-        return parseRootDependency(catalogNode, null);
+        return parseRootDependency(new CatalogNode(catalogNode), catalogNode, null);
     }
 
     private CatalogNode getNode() {
-        // this reading has to be done every step otherwise in order
+        // this reading has to be done every step in order
         // to progress with the node content inside the map
-        // otherwise I would use this expression in the final return statement
+        // otherwise I would have used this expression in the final return statement
         CatalogNode catalogNode = xmlWoodStockCatalogParser.readNode();
 
         if (!unfinishedRoots.isEmpty()) {
@@ -65,26 +58,39 @@ public class XmlCatalogMapParser {
     }
 
     private CatalogNode processUnfinishedRoots(CatalogNode readNode) {
+
         if (!unfinishedRoots.isEmpty()) {
+
             CatalogNode nodeFromStack = new CatalogNode(catalogNodeMap.get(unfinishedRoots.peek()));
 
             if (!nodeFromStack.hasChildren()) {
                 unfinishedRoots.pop();
+
                 catalogNodeMap.remove(nodeFromStack.getUniqueIdentifier());
+
             } else {
+
                 readNode = nodeFromStack;
             }
         }
         return readNode;
     }
 
-    private CatalogNode parseRootDependency(CatalogNode currentNode, CatalogNode previousNode) {
+    private CatalogNode parseRootDependency(CatalogNode root, CatalogNode currentNode, CatalogNode previousNode) {
         if (!currentNode.hasChildren() && visitedNodes.contains(currentNode.getUniqueIdentifier())) {
+
+            currentNode.setBaseContent(root.getContent());
+
             previousNode.removeDependency(currentNode.getUniqueIdentifier());
+
             catalogNodeMap.remove(currentNode.getUniqueIdentifier());
+
             visitedNodes.remove(currentNode.getUniqueIdentifier());
+
             return currentNode;
+
         } else if (!visitedNodes.contains(currentNode.getUniqueIdentifier())) {
+
             return null;
         }
 
@@ -97,7 +103,7 @@ public class XmlCatalogMapParser {
             }
         }
 
-        return parseRootDependency(catalogNodeMap.get(childNodeUniqueIdentifier.get()), currentNode);
+        return parseRootDependency(root, catalogNodeMap.get(childNodeUniqueIdentifier.get()), currentNode);
     }
 
 

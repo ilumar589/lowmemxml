@@ -29,7 +29,9 @@ public class XmlCatalogMapParser {
     public CatalogNode readNode() {
         CatalogNode catalogNode = getNode();
 
-        processUnfinishedRoots(catalogNode);
+        if (isRootAndLeaf(catalogNode)) {
+            return catalogNode;
+        }
 
         return parseRootDependency(new CatalogNode(catalogNode), catalogNode, null);
     }
@@ -47,6 +49,19 @@ public class XmlCatalogMapParser {
         visitNode(catalogNode.getUniqueIdentifier(), catalogNode.isRoot());
 
         return catalogNode;
+    }
+
+    private boolean isRootAndLeaf(CatalogNode catalogNode) {
+        if (catalogNode.isRoot() && !catalogNode.hasChildren()) {
+
+            unfinishedRoots.pop();
+
+            catalogNodeMap.remove(catalogNode.getUniqueIdentifier());
+
+            return true;
+        }
+
+        return false;
     }
 
     private void visitNode(String nodeIdentifier, boolean isRoot) {

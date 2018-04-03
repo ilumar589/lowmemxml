@@ -41,11 +41,17 @@ public class Main {
 
 		indexer.getNodeMap();
 
-		XmlWoodStockCatalogParser parser = new XmlWoodStockCatalogParser(config, indexer.getNodeMap());
+		XmlCatalogIterator xmlCatalogIterator = new XmlCatalogIterator(config, indexer.getNodeMap());
 
-		CatalogNode node = parser.readNode();
-
-		// TEST
-		System.out.println(NodeUtil.toString(parser.getCatalogNodeMap().get("N3").getContent(), false, false));
+		while (xmlCatalogIterator.hasNext()) {
+			CatalogNode catalogNode = xmlCatalogIterator.next();
+			System.out.println("***** NODE CONTENT *****");
+			System.out.println(catalogNode != null && catalogNode.getContent() != null ?
+					NodeUtil.toString(catalogNode.getContent(), false, true) : "Null for now");
+			System.out.println("**** BASE CONTENT *******");
+			System.out.println(catalogNode != null && catalogNode.getBaseContent() != null ?
+					NodeUtil.toString(catalogNode.getBaseContent(), false, true): "Null for now");
+			System.out.println("**** NEXT NODE *******");
+		}
 	}
 }

@@ -33,7 +33,7 @@ public class XmlCatalogMapParser {
             return catalogNode;
         }
 
-        return parseRootDependency(new CatalogNode(catalogNode), catalogNode, null);
+        return catalogNode.isRoot() ? parseRootDependency(new CatalogNode(catalogNode), catalogNode, null) : null;
     }
 
     private CatalogNode getNode() {
@@ -42,11 +42,11 @@ public class XmlCatalogMapParser {
         // otherwise I would have used this expression in the final return statement
         CatalogNode catalogNode = xmlWoodStockCatalogParser.readNode();
 
+        visitNode(catalogNode.getUniqueIdentifier(), catalogNode.isRoot());
+
         if (!unfinishedRoots.isEmpty()) {
             return catalogNodeMap.get(unfinishedRoots.peek());
         }
-
-        visitNode(catalogNode.getUniqueIdentifier(), catalogNode.isRoot());
 
         return catalogNode;
     }
@@ -104,7 +104,7 @@ public class XmlCatalogMapParser {
 
             return currentNode;
 
-        } else if (!visitedNodes.contains(currentNode.getUniqueIdentifier())) {
+        } else if (!currentNode.hasChildren() && !visitedNodes.contains(currentNode.getUniqueIdentifier())) {
 
             return null;
         }

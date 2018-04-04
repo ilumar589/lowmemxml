@@ -1,14 +1,22 @@
 package parser;
 
+import com.sun.org.apache.xpath.internal.jaxp.XPathFactoryImpl;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
 import java.util.*;
 
 public class XmlCatalogMapParser {
 
+    private static final String PARSE_EXP = "catalogueItem[1]/tradeItem/tradeItemInformation/tradingPartnerNeutralTradeItemInformation/packagingMaterial/packagingMaterialCompositionQuantity/measurementValue/@unitOfMeasure";
+
     private XmlWoodStockCatalogParser xmlWoodStockCatalogParser;
 
     private Map<String, CatalogNode> catalogNodeMap;
-
-    private CatalogNode startCatalogNode;
 
     private Collection<String> visitedNodes;
 
@@ -72,29 +80,32 @@ public class XmlCatalogMapParser {
         }
     }
 
-    private CatalogNode processUnfinishedRoots(CatalogNode readNode) {
-
-        if (!unfinishedRoots.isEmpty()) {
-
-            CatalogNode nodeFromStack = new CatalogNode(catalogNodeMap.get(unfinishedRoots.peek()));
-
-            if (!nodeFromStack.hasChildren()) {
-                unfinishedRoots.pop();
-
-                catalogNodeMap.remove(nodeFromStack.getUniqueIdentifier());
-
-            } else {
-
-                readNode = nodeFromStack;
-            }
-        }
-        return readNode;
-    }
-
     private CatalogNode parseRootDependency(CatalogNode root, CatalogNode currentNode, CatalogNode previousNode) {
         if (!currentNode.hasChildren() && visitedNodes.contains(currentNode.getUniqueIdentifier())) {
 
-            currentNode.setBaseContent(root.getContent());
+//            currentNode.setBaseContent(root.getContent());
+
+            Node n1 = currentNode.getContent();
+            Document document = n1.getOwnerDocument();
+            Node docNode = document.importNode(root.getContent(), true);
+            docNode.appendChild(currentNode.getContent());
+            currentNode.setContent(docNode);
+
+            XPath xPath = new XPathFactoryImpl().newXPath();
+
+            XPathExpression expression = null;
+            try {
+                expression = xPath.compile(PARSE_EXP);
+            } catch (XPathExpressionException e) {
+                e.printStackTrace();
+            }
+            try {
+                System.out.println("*** TEST XPATH ***");
+                System.out.println(expression.evaluate(currentNode.getContent(), XPathConstants.STRING).toString());
+                System.out.println("*** END TEST XPATH ***");
+            } catch (XPathExpressionException e) {
+                e.printStackTrace();
+            }
 
             previousNode.removeDependency(currentNode.getUniqueIdentifier());
 
@@ -121,50 +132,4 @@ public class XmlCatalogMapParser {
         return parseRootDependency(root, catalogNodeMap.get(childNodeUniqueIdentifier.get()), currentNode);
     }
 
-
-    public CatalogNode readNode2() {
-        if (startCatalogNode == null) {
-            startCatalogNode = xmlWoodStockCatalogParser.readNode();
-        }
-
-        if (startCatalogNode.isRoot() && !startCatalogNode.hasChildren()) {
-            catalogNodeMap.remove(startCatalogNode.getUniqueIdentifier());
-            CatalogNode returnCatalog = new CatalogNode(startCatalogNode);
-            startCatalogNode = null;
-            return returnCatalog;
-        }
-
-        if (startCatalogNode.isRoot()) {
-            return parseNode2(startCatalogNode, null);
-        }
-
-        startCatalogNode = xmlWoodStockCatalogParser.readNode();
-        return null;
-    }
-
-    private CatalogNode parseNode2(CatalogNode currentNode, CatalogNode previousNode) {
-        if (!currentNode.hasChildren() && currentNode.hasBeenRead()) {
-            previousNode.removeDependency(currentNode.getUniqueIdentifier());
-            catalogNodeMap.remove(currentNode.getUniqueIdentifier());
-            return currentNode;
-        } else if (!currentNode.hasChildren() && !currentNode.hasBeenRead()) {
-            CatalogNode tmpLastRead = xmlWoodStockCatalogParser.readNode();
-            if (currentNode.getUniqueIdentifier().equals(tmpLastRead.getUniqueIdentifier())) {
-                previousNode.removeDependency(tmpLastRead.getUniqueIdentifier());
-                catalogNodeMap.remove(tmpLastRead.getUniqueIdentifier());
-                return tmpLastRead;
-            }
-            return null;
-        }
-
-        Optional<String> childNodeUniqueIdentifier = currentNode.getNodeDependencies().stream().findFirst();
-        if (!childNodeUniqueIdentifier.isPresent()) {
-            try {
-                throw new Exception("Weird that the identifier is not stored");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return parseNode2(catalogNodeMap.get(childNodeUniqueIdentifier.get()), currentNode);
-    }
 }

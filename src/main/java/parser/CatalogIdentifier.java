@@ -6,10 +6,6 @@ public class CatalogIdentifier {
 
 	private String vendorProductNumber;
 
-	public CatalogIdentifier(String barcode) {
-		this.barcode = barcode;
-	}
-
 	public String getBarcode() {
 		return barcode;
 	}

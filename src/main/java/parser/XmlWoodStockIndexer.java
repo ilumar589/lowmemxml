@@ -71,6 +71,7 @@ public class XmlWoodStockIndexer {
 
 	private void handleCharacters() {
 
+
 		if (config.getRootTag().equalsIgnoreCase(tagStack.peek()) && config.getRootTagValue().equalsIgnoreCase(reader.getText())) {
 			isLatestReadNodeRoot = true;
 		} else if (config.getRootTag().equalsIgnoreCase(tagStack.peek()) && !config.getRootTagValue().equalsIgnoreCase(reader.getText())) {
@@ -111,10 +112,10 @@ public class XmlWoodStockIndexer {
 		if (config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
 				config.getDependencyTag().equalsIgnoreCase(tagStack.peek())) {
 
-			String uniqueIdentifier = reader.getText();
-			CatalogNode catalogNode = nodeFactory.getNode(uniqueIdentifier);
+			String dependencyUniqueIdentifier = reader.getText();
+			CatalogNode catalogNode = nodeFactory.getNode(dependencyUniqueIdentifier);
 			if (catalogNode == null) {
-				catalogNode = nodeFactory.generateNode(uniqueIdentifier, false);
+				catalogNode = nodeFactory.generateNode(dependencyUniqueIdentifier, false);
 			}
 
 			catalogNode.addDependency(lastReadUniqueIdentifier);

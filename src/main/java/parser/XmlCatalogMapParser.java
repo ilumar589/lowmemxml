@@ -129,6 +129,11 @@ public class XmlCatalogMapParser {
             }
         }
 
+        CatalogNode testCatalogNode = catalogNodeMap.get(childNodeUniqueIdentifier.get());
+//        if (testCatalogNode == null) {
+//            System.out.println("Node with identifier: " + childNodeUniqueIdentifier.get() + " is not present in map ");
+//        }
+
         return parseRootDependency(root, catalogNodeMap.get(childNodeUniqueIdentifier.get()), currentNode);
     }
 

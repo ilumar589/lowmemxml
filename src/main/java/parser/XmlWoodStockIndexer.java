@@ -94,7 +94,7 @@ public class XmlWoodStockIndexer {
 			} else {
 				catalogNode.setRoot(isLatestReadNodeRoot);
 			}
-			lastReadUniqueIdentifier = reader.getText();
+			lastReadUniqueIdentifier = uniqueIdentifier;
 		}
 
 		/**

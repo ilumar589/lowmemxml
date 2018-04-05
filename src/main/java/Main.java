@@ -7,6 +7,8 @@ public class Main {
 	private static final String XML_FILE = "E:\\projects\\lowmem\\src\\main\\java\\CIN_04039239500025.6819.xml";
 	private static final String GRAPH1 = "E:\\projects\\lowmem\\src\\main\\java\\graph1.xml";
 	private static final String GRAPH2 = "E:\\projects\\lowmem\\src\\main\\java\\graph2.xml";
+	private static final String HARTMAN_FULL = "E:\\projects\\lowmem\\src\\main\\java\\IVFHartmann_GS1_example_full.xml";
+	private static final String HARTMAN_SMALL = "E:\\projects\\lowmem\\src\\main\\java\\IVFHartmann_GS1_example_small.xml";
 
 	private static final String STORY_XML_FILE = "C:\\Users\\eduard.parvu\\Desktop\\160222_Original_Artikelkatalog_IVF_Hartmann_AG_CH_CorByThzAndDch.xml";
 
@@ -22,7 +24,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		XmlWoodStockConfig config = xmlWoodStockConfig()
-				.withFilePath(GRAPH2)
+				.withFilePath(HARTMAN_FULL)
 				.withEncoding(ENCODING)
 				.withContainingTag(CONTAINING_TAG)
 				.withUniqueIdentifierTag(UNIQUE_IDENTIFIER_TAG)
@@ -39,19 +41,25 @@ public class Main {
 
 		indexer.index();
 
-		indexer.getNodeMap();
+		indexer.getNodeMap().forEach((key, value) -> {
+			CatalogNode catalogNode = indexer.getNodeMap().get(key);
+			if (catalogNode.getNodeDependencies().contains("04049500340625")) {
+				System.out.println(catalogNode.getUniqueIdentifier() + " has 04049500340625 as a dependency");
+			}
+		});
+
 
 		XmlCatalogIterator xmlCatalogIterator = new XmlCatalogIterator(config, indexer.getNodeMap());
 
 		while (xmlCatalogIterator.hasNext()) {
-			CatalogNode catalogNode = xmlCatalogIterator.next();
-			System.out.println("***** NODE CONTENT *****");
-			System.out.println(catalogNode != null && catalogNode.getContent() != null ?
-					NodeUtil.toString(catalogNode.getContent(), true, true) : "Null for now");
-			System.out.println("**** BASE CONTENT *******");
-			System.out.println(catalogNode != null && catalogNode.getBaseContent() != null ?
-					NodeUtil.toString(catalogNode.getBaseContent(), true, true): "Null for now");
-			System.out.println("**** NEXT NODE *******");
+//			CatalogNode catalogNode = xmlCatalogIterator.next();
+//			System.out.println("***** NODE CONTENT *****");
+//			System.out.println(catalogNode != null && catalogNode.getContent() != null ?
+//					NodeUtil.toString(catalogNode.getContent(), true, true) : "Null for now");
+//			System.out.println("**** BASE CONTENT *******");
+//			System.out.println(catalogNode != null && catalogNode.getBaseContent() != null ?
+//					NodeUtil.toString(catalogNode.getBaseContent(), true, true): "Null for now");
+//			System.out.println("**** NEXT NODE *******");
 		}
 	}
 }

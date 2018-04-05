@@ -7,14 +7,11 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLEventWriter;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.events.Characters;
-import javax.xml.stream.events.EndElement;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
+import javax.xml.stream.*;
+import javax.xml.stream.events.*;
 import java.io.*;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 
@@ -24,7 +21,7 @@ public class XmlWoodStockCatalogParser {
 
 	private Map<String, CatalogNode> catalogNodeMap;
 
-	private XMLEventReader2 reader;
+	private XMLEventReader reader;
 
 	private NodeFactory nodeFactory;
 
@@ -34,14 +31,21 @@ public class XmlWoodStockCatalogParser {
 
 	public XmlWoodStockCatalogParser(XmlWoodStockConfig config, Map<String, CatalogNode> catalogNodeMap) {
 		this.config = config;
-		this.catalogNodeMap = catalogNodeMap;
-		this.nodeFactory = new NodeFactory(config.getEncoding());
-		this.tagStack = new Stack<>();
 
-		XMLInputFactory2 factory = (XMLInputFactory2) XMLInputFactory2.newInstance();
+		this.catalogNodeMap = catalogNodeMap;
 
 		try {
-			this.reader = (XMLEventReader2) factory.createXMLEventReader(new BufferedReader(new InputStreamReader(new FileInputStream(config.getFilePath()), config.getEncoding())));
+			this.nodeFactory = new NodeFactory(config.getEncoding());
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		}
+
+		this.tagStack = new Stack<>();
+
+		XMLInputFactory factory = XMLInputFactory.newInstance();
+
+		try {
+			this.reader = factory.createXMLEventReader(new BufferedReader(new InputStreamReader(new FileInputStream(config.getFilePath()), config.getEncoding())));
 		} catch (XMLStreamException | UnsupportedEncodingException | FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -52,25 +56,39 @@ public class XmlWoodStockCatalogParser {
 		boolean insideMatchingNode = false;
 
 		try {
-			while (reader.hasNextEvent()) {
+			while (reader.hasNext()) {
 				XMLEvent event = (XMLEvent) reader.next();
 
 				if (event.isStartElement() && handleStartElement(event.asStartElement())) {
+
 					insideMatchingNode = true;
+
 				} else if (event.isEndElement() && handleEndElement(event.asEndElement())) {
+
 					lastReadCatalogNode.setContent(nodeFactory.createNode());
+
 					break;
+
 				} else if (insideMatchingNode) {
-					nodeFactory.writeEvent(event);
+
+					nodeFactory.add(event);
 
 					switch (event.getEventType()) {
+
 						case XMLEvent.START_ELEMENT: {
+
 							tagStack.push(event.asStartElement().getName().getLocalPart());
+
 						}break;
+
 						case XMLEvent.END_ELEMENT: {
+
 							if (!tagStack.isEmpty()) {
+
 								tagStack.pop();
+
 							}
+
 						}break;
 					}
 				}
@@ -90,11 +108,17 @@ public class XmlWoodStockCatalogParser {
 		return catalogNodeMap;
 	}
 
-	private boolean handleStartElement(StartElement startElement) {
+	private boolean handleStartElement(StartElement startElement) throws XMLStreamException {
+		nodeFactory.addNamespaces(startElement);
+
 		String tag = startElement.getName().getLocalPart();
+
 		if (config.getContainingTag().equalsIgnoreCase(tag)) {
-			nodeFactory.writeEvent(startElement);
+
+			nodeFactory.addRoot(startElement);
+
 			tagStack.push(tag);
+
 			return true;
 		}
 
@@ -110,9 +134,9 @@ public class XmlWoodStockCatalogParser {
 		}
 	}
 
-	private boolean handleEndElement(EndElement endElement) {
+	private boolean handleEndElement(EndElement endElement) throws XMLStreamException {
 		if (config.getContainingTag().equalsIgnoreCase(endElement.getName().getLocalPart())) {
-			nodeFactory.writeEvent(endElement);
+			nodeFactory.add(endElement);
 			return true;
 		}
 		return false;
@@ -133,7 +157,9 @@ public class XmlWoodStockCatalogParser {
 
 		private XMLEventWriter writer;
 
-		private XMLOutputFactory2 outputFactory;
+		private XMLOutputFactory outputFactory;
+
+		private XMLEventFactory xmlEventFactory;
 
 		private HashMap<String, String> namespaceContext;
 
@@ -141,14 +167,23 @@ public class XmlWoodStockCatalogParser {
 
 		private DocumentBuilder nodeBuilder;
 
-		private NodeFactory(String encoding) {
+		private NodeFactory(String encoding) throws ParserConfigurationException {
 			this.encoding = encoding;
-			this.outputFactory = (XMLOutputFactory2) XMLOutputFactory2.newInstance();
-			try {
-				this.nodeBuilder = createNodeBuilder();
-			} catch (ParserConfigurationException e) {
-				e.printStackTrace();
-			}
+
+			this.outputFactory =  XMLOutputFactory.newInstance();
+
+			this.xmlEventFactory = XMLEventFactory.newFactory();
+
+			this.namespaceContext = new HashMap<>();
+
+			this.nodeBuilder = createNodeBuilder();
+
+		}
+
+
+		private void addNamespaces(StartElement startElement) {
+			Iterator<? extends Namespace> namespaces = startElement.getNamespaces();
+			namespaces.forEachRemaining(ns -> namespaceContext.put(ns.getPrefix(), ns.getNamespaceURI()));
 		}
 
 		private void readyForNextNode() {
@@ -160,17 +195,21 @@ public class XmlWoodStockCatalogParser {
 			}
 		}
 
-		private void writeEvent(XMLEvent event) {
-			try {
-				writer.add(event);
-			} catch (XMLStreamException e) {
-				e.printStackTrace();
+		void addRoot(StartElement rootElement) throws XMLStreamException {
+			add(rootElement);
+			for (String prefix : namespaceContext.keySet()) {
+				writer.setPrefix(prefix, namespaceContext.get(prefix));
+				writer.add(xmlEventFactory.createNamespace(prefix, namespaceContext.get(prefix)));
 			}
+		}
+
+		private void add(XMLEvent event) throws XMLStreamException {
+			writer.add(event);
 		}
 
 		private DocumentBuilder createNodeBuilder() throws ParserConfigurationException {
 			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-			documentBuilderFactory.setNamespaceAware(false);
+			documentBuilderFactory.setNamespaceAware(true);
 			return documentBuilderFactory.newDocumentBuilder();
 		}
 

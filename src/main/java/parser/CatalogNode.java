@@ -10,7 +10,6 @@ public class CatalogNode {
 	private String uniqueIdentifier;
 	private boolean isRoot;
 	private Node content;
-	private Node baseContent;
 	private Collection<String> nodeDependencies;
 
 	public CatalogNode(String uniqueIdentifier, boolean isRoot) {
@@ -23,7 +22,6 @@ public class CatalogNode {
 		this.uniqueIdentifier = catalogNode.getUniqueIdentifier();
 		this.isRoot = catalogNode.isRoot();
 		this.content = catalogNode.getContent();
-		this.baseContent = catalogNode.getBaseContent();
 		this.nodeDependencies = catalogNode.getNodeDependencies();
 	}
 
@@ -69,14 +67,6 @@ public class CatalogNode {
 
 	public boolean hasBeenRead() {
 		return this.content != null;
-	}
-
-	public Node getBaseContent() {
-		return baseContent;
-	}
-
-	public void setBaseContent(Node baseContent) {
-		this.baseContent = baseContent;
 	}
 
 	public String getUniqueIdentifier() {

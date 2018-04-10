@@ -512,7 +512,7 @@
 									<tradeItemIdentification>
 										<gtin>N1</gtin>
 										<additionalTradeItemIdentification>
-											<additionalTradeItemIdentificationValue>0072786RS</additionalTradeItemIdentificationValue>
+											<additionalTradeItemIdentificationValue>0072786R</additionalTradeItemIdentificationValue>
 											<additionalTradeItemIdentificationType>SUPPLIER_ASSIGNED</additionalTradeItemIdentificationType>
 										</additionalTradeItemIdentification>
 									</tradeItemIdentification>
@@ -613,7 +613,7 @@
 									<tradeItemIdentification>
 										<gtin>N5</gtin>
 										<additionalTradeItemIdentification>
-											<additionalTradeItemIdentificationValue>0072786RSX</additionalTradeItemIdentificationValue>
+											<additionalTradeItemIdentificationValue>0072786R</additionalTradeItemIdentificationValue>
 											<additionalTradeItemIdentificationType>SUPPLIER_ASSIGNED</additionalTradeItemIdentificationType>
 										</additionalTradeItemIdentification>
 									</tradeItemIdentification>

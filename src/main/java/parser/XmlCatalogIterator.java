@@ -7,7 +7,7 @@ public class XmlCatalogIterator implements Iterator<CatalogNode>{
 
 	private XmlCatalogMapParser catalogNodeMapParser;
 
-	public XmlCatalogIterator(XmlWoodStockConfig config, Map<String, CatalogNode> catalogNodeMap) {
+	public XmlCatalogIterator(XmlWoodStockConfig config, Map<CatalogIdentifier, CatalogNode> catalogNodeMap) {
 		this.catalogNodeMapParser = new XmlCatalogMapParser(new XmlWoodStockCatalogParser(config, catalogNodeMap));
 	}
 

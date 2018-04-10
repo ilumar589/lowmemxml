@@ -16,16 +16,19 @@ public class XmlCatalogMapParser {
 
     private XmlWoodStockCatalogParser xmlWoodStockCatalogParser;
 
-    private Map<String, CatalogNode> catalogNodeMap;
+    private Map<CatalogIdentifier, CatalogNode> catalogNodeMap;
 
-    private Collection<String> visitedNodes;
+    private Collection<CatalogIdentifier> visitedNodes;
 
-    private Stack<String> unfinishedRoots;
+    private Stack<CatalogIdentifier> unfinishedRoots;
 
     public XmlCatalogMapParser(XmlWoodStockCatalogParser xmlWoodStockCatalogParser) {
         this.xmlWoodStockCatalogParser = xmlWoodStockCatalogParser;
+
         this.catalogNodeMap = xmlWoodStockCatalogParser.getCatalogNodeMap();
-        this.visitedNodes = new ArrayList<>();
+
+        this.visitedNodes = new HashSet<>();
+
         this.unfinishedRoots = new Stack<>();
     }
 
@@ -72,7 +75,7 @@ public class XmlCatalogMapParser {
         return false;
     }
 
-    private void visitNode(String nodeIdentifier, boolean isRoot) {
+    private void visitNode(CatalogIdentifier nodeIdentifier, boolean isRoot) {
         if (isRoot) {
             unfinishedRoots.add(nodeIdentifier);
         } else {
@@ -82,6 +85,10 @@ public class XmlCatalogMapParser {
 
     private CatalogNode parseRootDependency(CatalogNode root, CatalogNode currentNode, CatalogNode previousNode) {
         if (!currentNode.hasChildren() && visitedNodes.contains(currentNode.getUniqueIdentifier())) {
+
+            if (currentNode.getUniqueIdentifier().equals(new CatalogIdentifier("04049500255431", "1698705"))) {
+                System.out.println();
+            }
 
 //            currentNode.setBaseContent(root.getContent());
 
@@ -120,7 +127,7 @@ public class XmlCatalogMapParser {
             return null;
         }
 
-        Optional<String> childNodeUniqueIdentifier = currentNode.getNodeDependencies().stream().findFirst();
+        Optional<CatalogIdentifier> childNodeUniqueIdentifier = currentNode.getNodeDependencies().stream().findFirst();
         if (!childNodeUniqueIdentifier.isPresent()) {
             try {
                 throw new Exception("Weird that the identifier is not stored");

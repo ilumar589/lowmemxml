@@ -2,20 +2,20 @@ package parser;
 
 import org.w3c.dom.Node;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 
 public class CatalogNode {
 
-	private String uniqueIdentifier;
+	private CatalogIdentifier uniqueIdentifier;
 	private boolean isRoot;
 	private Node content;
-	private Collection<String> nodeDependencies;
+	private Collection<CatalogIdentifier> nodeDependencies;
 
-	public CatalogNode(String uniqueIdentifier, boolean isRoot) {
+	public CatalogNode(CatalogIdentifier uniqueIdentifier, boolean isRoot) {
 		this.uniqueIdentifier = uniqueIdentifier;
 		this.isRoot = isRoot;
-		this.nodeDependencies = new ArrayList<>();
+		this.nodeDependencies = new HashSet<>();
 	}
 
 	public CatalogNode(CatalogNode catalogNode) {
@@ -25,11 +25,11 @@ public class CatalogNode {
 		this.nodeDependencies = catalogNode.getNodeDependencies();
 	}
 
-	public void addDependency(String index) {
+	public void addDependency(CatalogIdentifier index) {
 		nodeDependencies.add(index);
 	}
 
-	public void removeDependency(String uniqueIdentifier) {
+	public void removeDependency(CatalogIdentifier uniqueIdentifier) {
 		if (!nodeDependencies.contains(uniqueIdentifier)) {
 			try {
 				throw new Exception("Identifer " + uniqueIdentifier + " not in dependency list for node " + this.uniqueIdentifier);
@@ -41,7 +41,7 @@ public class CatalogNode {
 		nodeDependencies.remove(uniqueIdentifier);
 	}
 
-	public Collection<String> getNodeDependencies() {
+	public Collection<CatalogIdentifier> getNodeDependencies() {
 		return nodeDependencies;
 	}
 
@@ -69,14 +69,11 @@ public class CatalogNode {
 		return this.content != null;
 	}
 
-	public String getUniqueIdentifier() {
+	public CatalogIdentifier getUniqueIdentifier() {
 		return uniqueIdentifier;
 	}
 
-	public void setUniqueIdentifier(String uniqueIdentifier) {
+	public void setUniqueIdentifier(CatalogIdentifier uniqueIdentifier) {
 		this.uniqueIdentifier = uniqueIdentifier;
 	}
-
-
-
 }

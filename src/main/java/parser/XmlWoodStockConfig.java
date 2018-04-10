@@ -24,6 +24,14 @@ public class XmlWoodStockConfig {
 
 	private String rootTagValue;
 
+	private String vendorProductNumberContainingTag;
+
+	private String vendorProductNumberValueTag;
+
+	private String vendorProductNumberTypeTag;
+
+	private String vendorProductNumberTypeValue;
+
 	private XmlWoodStockConfig(Builder builder) {
 		this.filePath = builder.filePath;
 
@@ -46,6 +54,14 @@ public class XmlWoodStockConfig {
 		this.rootTag = builder.rootTag;
 
 		this.rootTagValue = builder.rootTagValue;
+
+		this.vendorProductNumberContainingTag = builder.vendorProductNumberContainingTag;
+
+		this.vendorProductNumberValueTag = builder.vendorProductNumberValueTag;
+
+		this.vendorProductNumberTypeTag = builder.vendorProductNumberTypeTag;
+
+		this.vendorProductNumberTypeValue = builder.vendorProductNumberTypeValue;
 	}
 
 	public String getFilePath() {
@@ -92,6 +108,22 @@ public class XmlWoodStockConfig {
 		return rootTagValue;
 	}
 
+	public String getVendorProductNumberContainingTag() {
+		return vendorProductNumberContainingTag;
+	}
+
+	public String getVendorProductNumberValueTag() {
+		return vendorProductNumberValueTag;
+	}
+
+	public String getVendorProductNumberTypeTag() {
+		return vendorProductNumberTypeTag;
+	}
+
+	public String getVendorProductNumberTypeValue() {
+		return vendorProductNumberTypeValue;
+	}
+
 	public static final class Builder {
 
 		private String filePath;
@@ -115,6 +147,14 @@ public class XmlWoodStockConfig {
 		private String rootTag;
 
 		private String rootTagValue;
+
+		private String vendorProductNumberContainingTag;
+
+		private String vendorProductNumberValueTag;
+
+		private String vendorProductNumberTypeTag;
+
+		private String vendorProductNumberTypeValue;
 
 		public static Builder xmlWoodStockConfig() {return new Builder();}
 
@@ -170,6 +210,26 @@ public class XmlWoodStockConfig {
 
 		public Builder withRootTagValue(String rootTagValue) {
 			this.rootTagValue = rootTagValue;
+			return this;
+		}
+
+		public Builder withVendorProductNumberContainingTag(String vendorProductNumberContainingTag) {
+			this.vendorProductNumberContainingTag = vendorProductNumberContainingTag;
+			return this;
+		}
+
+		public Builder withVendorProductNumberValueTag(String vendorProductNumberValueTag) {
+			this.vendorProductNumberValueTag = vendorProductNumberValueTag;
+			return this;
+		}
+
+		public Builder withVendorProductNumberTypeTag(String vendorProductNumberTypeTag) {
+			this.vendorProductNumberTypeTag = vendorProductNumberTypeTag;
+			return this;
+		}
+
+		public Builder withVendorProductNumberTypeValue(String vendorProductNumberTypeValue) {
+			this.vendorProductNumberTypeValue = vendorProductNumberTypeValue;
 			return this;
 		}
 

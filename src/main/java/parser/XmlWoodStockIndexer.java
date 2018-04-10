@@ -20,7 +20,11 @@ public class XmlWoodStockIndexer {
 
 	private NodeFactory nodeFactory;
 
-	private String lastReadUniqueIdentifier;
+	private String lastReadBarcode;
+
+	private String lastReadVendorProductNumber;
+
+	private String tempVendorProductNumber;
 
 	private boolean isLatestReadNodeRoot = false;
 
@@ -61,7 +65,7 @@ public class XmlWoodStockIndexer {
 		}
 	}
 
-	public Map<String, CatalogNode> getNodeMap() {
+	public Map<CatalogIdentifier, CatalogNode> getNodeMap() {
 		return nodeFactory.getNodeMap();
 	}
 
@@ -70,14 +74,25 @@ public class XmlWoodStockIndexer {
 	}
 
 	private void handleCharacters() {
+		determineRootNode();
 
+		determineBarcode();
 
+		determineVendorProductNumber();
+
+		determineDependency();
+
+	}
+
+	private void determineRootNode() {
 		if (config.getRootTag().equalsIgnoreCase(tagStack.peek()) && config.getRootTagValue().equalsIgnoreCase(reader.getText())) {
 			isLatestReadNodeRoot = true;
 		} else if (config.getRootTag().equalsIgnoreCase(tagStack.peek()) && !config.getRootTagValue().equalsIgnoreCase(reader.getText())) {
 			isLatestReadNodeRoot = false;
 		}
+	}
 
+	private void determineBarcode() {
 		/**
 		 * If the unique identifier tag is found a @CatalogNode
 		 * is generated with this unique identifier and it is
@@ -88,23 +103,18 @@ public class XmlWoodStockIndexer {
 				config.getUniqueIdentifierContainerTag().equalsIgnoreCase(getPreviousElement(config.getUniqueIdentifierContainerTagStackDistance())) &&
 				config.getUniqueIdentifierTag().equalsIgnoreCase(tagStack.peek())) {
 
-			String uniqueIdentifier = reader.getText();
-			CatalogNode catalogNode = nodeFactory.getNode(uniqueIdentifier);
-			if (catalogNode == null) {
-				nodeFactory.generateNode(reader.getText(), isLatestReadNodeRoot);
-			} else {
-				catalogNode.setRoot(isLatestReadNodeRoot);
-			}
-			lastReadUniqueIdentifier = uniqueIdentifier;
+			lastReadBarcode = reader.getText();
 		}
+	}
 
+	private void determineDependency() {
 		/**
 		 * If while reading the xml tags inside our container tag
 		 * we find a dependency we create a @CatalogNode with the unique
 		 * identifier inside that dependency if it's not already
 		 * created. Afterwards we add a dependency to this node
 		 * which is the @lastReadUniqueIdentifier  found while
-		 * reading previous tags inside out container tag. The
+		 * reading previous tags inside our container tag. The
 		 * graph will contain base units as root nodes and nodes
 		 * that are dependent upon another node are children of
 		 * that respective node
@@ -112,16 +122,59 @@ public class XmlWoodStockIndexer {
 		if (config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
 				config.getDependencyTag().equalsIgnoreCase(tagStack.peek())) {
 
-			String dependencyUniqueIdentifier = reader.getText();
-			CatalogNode catalogNode = nodeFactory.getNode(dependencyUniqueIdentifier);
-			if (catalogNode == null) {
-				catalogNode = nodeFactory.generateNode(dependencyUniqueIdentifier, false);
+			String dependencyBarcode = reader.getText();
+
+			if (dependencyBarcode != null && lastReadVendorProductNumber != null) {
+				CatalogIdentifier catalogIdentifier = new CatalogIdentifier(dependencyBarcode, lastReadVendorProductNumber);
+
+				CatalogNode catalogNode = nodeFactory.getNode(catalogIdentifier);
+				if (catalogNode == null) {
+					catalogNode = nodeFactory.generateNode(catalogIdentifier, false);
+				}
+
+				catalogNode.addDependency(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber));
 			}
 
-			catalogNode.addDependency(lastReadUniqueIdentifier);
-			lastReadUniqueIdentifier = null;
 		}
 	}
+
+	private void determineVendorProductNumber() {
+		/** if we are inside the vendor product number containing tag**/
+		if (config.getVendorProductNumberContainingTag().equalsIgnoreCase(getPreviousElement(2))) {
+
+			/** the vendor product number values is found before the type so it has to be stored until
+			 * we cant test that it's supplier assigned **/
+			if (config.getVendorProductNumberValueTag().equalsIgnoreCase(tagStack.peek())) {
+				tempVendorProductNumber = reader.getText();
+			}
+
+			/** if we reach the vendor product number type tag and it's value is supplier assigned **/
+			if (config.getVendorProductNumberTypeTag().equalsIgnoreCase(tagStack.peek()) &&
+					config.getVendorProductNumberTypeValue().equalsIgnoreCase(reader.getText())) {
+				lastReadVendorProductNumber = tempVendorProductNumber;
+
+				generateNode();
+
+			}
+		}
+	}
+
+	private void generateNode() {
+		if (lastReadBarcode != null && lastReadVendorProductNumber != null) {
+			CatalogIdentifier catalogIdentifier = new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber);
+
+			CatalogNode catalogNode = nodeFactory.getNode(catalogIdentifier);
+
+			if (catalogNode == null) {
+				nodeFactory.generateNode(catalogIdentifier, isLatestReadNodeRoot);
+			} else {
+				/** update is root status **/
+				catalogNode.setRoot(isLatestReadNodeRoot);
+			}
+
+		}
+	}
+
 
 	private void handleEndElement() {
 		tagStack.pop();
@@ -138,24 +191,24 @@ public class XmlWoodStockIndexer {
 
 	private static final class NodeFactory {
 
-		private Map<String, CatalogNode> nodeMap;
+		private Map<CatalogIdentifier, CatalogNode> nodeMap;
 
 		private NodeFactory() {
 			this.nodeMap = new HashMap<>();
 		}
 
-		private CatalogNode generateNode(String uniqueIdentifierValue, boolean isRootNode) {
-			CatalogNode catalogNode = new CatalogNode(uniqueIdentifierValue,isRootNode);
-			nodeMap.putIfAbsent(uniqueIdentifierValue, catalogNode);
+		private CatalogNode generateNode(CatalogIdentifier uniqueIdentifer, boolean isRootNode) {
+			CatalogNode catalogNode = new CatalogNode(uniqueIdentifer, isRootNode);
+			nodeMap.putIfAbsent(uniqueIdentifer, catalogNode);
 
 			return catalogNode;
 		}
 
-		private CatalogNode getNode(String uniqueIdentifier) {
+		private CatalogNode getNode(CatalogIdentifier uniqueIdentifier) {
 			return nodeMap.get(uniqueIdentifier);
 		}
 
-		private Map<String, CatalogNode> getNodeMap() {
+		private Map<CatalogIdentifier, CatalogNode> getNodeMap() {
 			return nodeMap;
 		}
 

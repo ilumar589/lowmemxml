@@ -1,6 +1,5 @@
 package parser;
 
-import org.codehaus.stax2.*;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -19,7 +18,7 @@ public class XmlWoodStockCatalogParser {
 
 	private XmlWoodStockConfig config;
 
-	private Map<String, CatalogNode> catalogNodeMap;
+	private Map<CatalogIdentifier, CatalogNode> catalogNodeMap;
 
 	private XMLEventReader reader;
 
@@ -29,7 +28,13 @@ public class XmlWoodStockCatalogParser {
 
 	private CatalogNode lastReadCatalogNode;
 
-	public XmlWoodStockCatalogParser(XmlWoodStockConfig config, Map<String, CatalogNode> catalogNodeMap) {
+	private String lastReadBarcode;
+
+	private String lastReadVendorProductNumber;
+
+	private String tempVendorProductNumber;
+
+	public XmlWoodStockCatalogParser(XmlWoodStockConfig config, Map<CatalogIdentifier, CatalogNode> catalogNodeMap) {
 		this.config = config;
 
 		this.catalogNodeMap = catalogNodeMap;
@@ -88,7 +93,6 @@ public class XmlWoodStockCatalogParser {
 								tagStack.pop();
 
 							}
-
 						}break;
 					}
 				}
@@ -104,7 +108,7 @@ public class XmlWoodStockCatalogParser {
 		return lastReadCatalogNode;
 	}
 
-	public Map<String, CatalogNode> getCatalogNodeMap() {
+	public Map<CatalogIdentifier, CatalogNode> getCatalogNodeMap() {
 		return catalogNodeMap;
 	}
 
@@ -126,11 +130,19 @@ public class XmlWoodStockCatalogParser {
 	}
 
 	private void handleCharacters(Characters characters) {
-		if (!config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
-				config.getUniqueIdentifierContainerTag().equalsIgnoreCase(getPreviousElement(config.getUniqueIdentifierContainerTagStackDistance())) &&
-				config.getUniqueIdentifierTag().equalsIgnoreCase(tagStack.peek())) {
 
-			lastReadCatalogNode = catalogNodeMap.get(characters.getData());
+		determineBarcode(characters.getData());
+
+		determineVendorProductNumber(characters.getData());
+	}
+
+	private void setLastNode() {
+		if (lastReadBarcode != null && lastReadVendorProductNumber != null) {
+			lastReadCatalogNode = catalogNodeMap.get(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber));
+
+			if (lastReadCatalogNode == null) {
+				System.out.println("No node found for barcode: " + lastReadBarcode + " and vendor product number: " + lastReadVendorProductNumber);
+			}
 		}
 	}
 
@@ -149,6 +161,42 @@ public class XmlWoodStockCatalogParser {
 		}
 
 		return tagStack.get(tagStackSize - distance);
+	}
+
+	private void determineBarcode(String text) {
+		/**
+		 * If the unique identifier tag is found a @CatalogNode
+		 * is generated with this unique identifier and it is
+		 * saved in order to be used later if a dependency tag
+		 * is found
+		 */
+		if (!config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
+				config.getUniqueIdentifierContainerTag().equalsIgnoreCase(getPreviousElement(config.getUniqueIdentifierContainerTagStackDistance())) &&
+				config.getUniqueIdentifierTag().equalsIgnoreCase(tagStack.peek())) {
+
+			lastReadBarcode = text;
+		}
+	}
+
+	private void determineVendorProductNumber(String text) {
+		/** if we are inside the vendor product number containing tag**/
+		if (config.getVendorProductNumberContainingTag().equalsIgnoreCase(getPreviousElement(2))) {
+
+			/** the vendor product number values is found before the type so it has to be stored until
+			 * we cant test that it's supplier assigned **/
+			if (config.getVendorProductNumberValueTag().equalsIgnoreCase(tagStack.peek())) {
+				tempVendorProductNumber = text;
+			}
+
+			/** if we reach the vendor product number type tag and it's value is supplier assigned **/
+			if (config.getVendorProductNumberTypeTag().equalsIgnoreCase(tagStack.peek()) &&
+					config.getVendorProductNumberTypeValue().equalsIgnoreCase(text)) {
+				lastReadVendorProductNumber = tempVendorProductNumber;
+
+				setLastNode();
+			}
+
+		}
 	}
 
 	private static final class NodeFactory {

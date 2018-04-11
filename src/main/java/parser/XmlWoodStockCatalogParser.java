@@ -1,6 +1,6 @@
 package parser;
 
-import org.codehaus.stax2.*;
+import com.google.common.collect.Multimap;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -12,14 +12,13 @@ import javax.xml.stream.events.*;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Stack;
 
 public class XmlWoodStockCatalogParser {
 
 	private XmlWoodStockConfig config;
 
-	private Map<String, CatalogNode> catalogNodeMap;
+	private Multimap<String, CatalogNode> catalogNodeMap;
 
 	private XMLEventReader reader;
 
@@ -29,7 +28,7 @@ public class XmlWoodStockCatalogParser {
 
 	private CatalogNode lastReadCatalogNode;
 
-	public XmlWoodStockCatalogParser(XmlWoodStockConfig config, Map<String, CatalogNode> catalogNodeMap) {
+	public XmlWoodStockCatalogParser(XmlWoodStockConfig config, Multimap<String, CatalogNode> catalogNodeMap) {
 		this.config = config;
 
 		this.catalogNodeMap = catalogNodeMap;
@@ -104,7 +103,7 @@ public class XmlWoodStockCatalogParser {
 		return lastReadCatalogNode;
 	}
 
-	public Map<String, CatalogNode> getCatalogNodeMap() {
+	public Multimap<String, CatalogNode> getCatalogNodeMap() {
 		return catalogNodeMap;
 	}
 
@@ -130,7 +129,7 @@ public class XmlWoodStockCatalogParser {
 				config.getUniqueIdentifierContainerTag().equalsIgnoreCase(getPreviousElement(config.getUniqueIdentifierContainerTagStackDistance())) &&
 				config.getUniqueIdentifierTag().equalsIgnoreCase(tagStack.peek())) {
 
-			lastReadCatalogNode = catalogNodeMap.get(characters.getData());
+			lastReadCatalogNode = catalogNodeMap.get(characters.getData()).stream().findFirst().get();
 		}
 	}
 

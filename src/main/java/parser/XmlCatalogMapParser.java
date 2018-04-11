@@ -1,5 +1,6 @@
 package parser;
 
+import com.google.common.collect.Multimap;
 import com.sun.org.apache.xpath.internal.jaxp.XPathFactoryImpl;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -9,6 +10,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class XmlCatalogMapParser {
 
@@ -16,7 +18,7 @@ public class XmlCatalogMapParser {
 
     private XmlWoodStockCatalogParser xmlWoodStockCatalogParser;
 
-    private Map<String, CatalogNode> catalogNodeMap;
+    private Multimap<String, CatalogNode> catalogNodeMap;
 
     private Collection<String> visitedNodes;
 
@@ -30,7 +32,7 @@ public class XmlCatalogMapParser {
     }
 
     public boolean hasNext() {
-        return !catalogNodeMap.isEmpty();
+        return catalogNodeMap != null && !catalogNodeMap.isEmpty();
     }
 
 
@@ -41,8 +43,20 @@ public class XmlCatalogMapParser {
             return catalogNode;
         }
 
-        return catalogNode.isRoot() ? parseRootDependency(new CatalogNode(catalogNode), catalogNode, null) : null;
+        return catalogNode.isRoot() ? parseRootTailCall(catalogNode) : null;
     }
+
+    private CatalogNode parseRootTailCall(CatalogNode catalogNode) {
+        Optional<TailCall> tailCall = Stream.iterate(parseRootDependency(new CatalogNode(catalogNode), catalogNode, null), TailCall::get)
+                .filter(TailCall::terminated)
+                .findFirst();
+
+        if (tailCall.isPresent() && tailCall.get() instanceof CatalogNode) {
+            return (CatalogNode) tailCall.get();
+        }
+        return null;
+    }
+
 
     private CatalogNode getNode() {
         // this reading has to be done every step in order
@@ -53,7 +67,7 @@ public class XmlCatalogMapParser {
         visitNode(catalogNode.getUniqueIdentifier(), catalogNode.isRoot());
 
         if (!unfinishedRoots.isEmpty()) {
-            return catalogNodeMap.get(unfinishedRoots.peek());
+            return catalogNodeMap.get(unfinishedRoots.peek()).stream().findFirst().get();
         }
 
         return catalogNode;
@@ -64,7 +78,7 @@ public class XmlCatalogMapParser {
 
             unfinishedRoots.pop();
 
-            catalogNodeMap.remove(catalogNode.getUniqueIdentifier());
+            catalogNodeMap.remove(catalogNode.getUniqueIdentifier(), catalogNode);
 
             return true;
         }
@@ -80,7 +94,13 @@ public class XmlCatalogMapParser {
         }
     }
 
-    private CatalogNode parseRootDependency(CatalogNode root, CatalogNode currentNode, CatalogNode previousNode) {
+//    private CatalogNode parseRootDependency2(CatalogNode root, CatalogNode currentNode, CatalogNode previousNode) {
+//        while (currentNode.hasChildren()) {
+//
+//        }
+//    }
+
+    private TailCall parseRootDependency(CatalogNode root, CatalogNode currentNode, CatalogNode previousNode) {
         if (!currentNode.hasChildren() && visitedNodes.contains(currentNode.getUniqueIdentifier())) {
 
 //            currentNode.setBaseContent(root.getContent());
@@ -91,33 +111,35 @@ public class XmlCatalogMapParser {
             docNode.appendChild(currentNode.getContent());
             currentNode.setContent(docNode);
 
-            XPath xPath = new XPathFactoryImpl().newXPath();
-
-            XPathExpression expression = null;
-            try {
-                expression = xPath.compile(PARSE_EXP);
-            } catch (XPathExpressionException e) {
-                e.printStackTrace();
-            }
-            try {
-                System.out.println("*** TEST XPATH ***");
-                System.out.println(expression.evaluate(currentNode.getContent(), XPathConstants.STRING).toString());
-                System.out.println("*** END TEST XPATH ***");
-            } catch (XPathExpressionException e) {
-                e.printStackTrace();
-            }
+//            XPath xPath = new XPathFactoryImpl().newXPath();
+//
+//            XPathExpression expression = null;
+//            try {
+//                expression = xPath.compile(PARSE_EXP);
+//            } catch (XPathExpressionException e) {
+//                e.printStackTrace();
+//            }
+//            try {
+//                System.out.println("*** TEST XPATH ***");
+//                System.out.println(expression.evaluate(currentNode.getContent(), XPathConstants.STRING).toString());
+//                System.out.println("*** END TEST XPATH ***");
+//            } catch (XPathExpressionException e) {
+//                e.printStackTrace();
+//            }
 
             previousNode.removeDependency(currentNode.getUniqueIdentifier());
 
-            catalogNodeMap.remove(currentNode.getUniqueIdentifier());
+            catalogNodeMap.remove(currentNode.getUniqueIdentifier(), currentNode);
 
             visitedNodes.remove(currentNode.getUniqueIdentifier());
+
+            System.out.println("Current node " + currentNode.toString() + " previous node: " + previousNode.toString() + " root node: " + root.toString());
 
             return currentNode;
 
         } else if (!currentNode.hasChildren() && !visitedNodes.contains(currentNode.getUniqueIdentifier())) {
 
-            return null;
+            return TailCallTerminate::new;
         }
 
         Optional<String> childNodeUniqueIdentifier = currentNode.getNodeDependencies().stream().findFirst();
@@ -129,12 +151,12 @@ public class XmlCatalogMapParser {
             }
         }
 
-        CatalogNode testCatalogNode = catalogNodeMap.get(childNodeUniqueIdentifier.get());
+//        CatalogNode testCatalogNode = catalogNodeMap.get(childNodeUniqueIdentifier.get());
 //        if (testCatalogNode == null) {
 //            System.out.println("Node with identifier: " + childNodeUniqueIdentifier.get() + " is not present in map ");
 //        }
 
-        return parseRootDependency(root, catalogNodeMap.get(childNodeUniqueIdentifier.get()), currentNode);
+        return () -> parseRootDependency(root, catalogNodeMap.get(childNodeUniqueIdentifier.get()).stream().findFirst().get(), currentNode);
     }
 
 }

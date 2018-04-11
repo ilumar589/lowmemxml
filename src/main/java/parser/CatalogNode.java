@@ -1,19 +1,23 @@
 package parser;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.w3c.dom.Node;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class CatalogNode {
+public class CatalogNode implements TailCall{
 
+	private Long rank;
 	private String uniqueIdentifier;
 	private boolean isRoot;
 	private Node content;
 	private Collection<String> nodeDependencies;
 
-	public CatalogNode(String uniqueIdentifier, boolean isRoot) {
+	public CatalogNode(String uniqueIdentifier, Long rank, boolean isRoot) {
 		this.uniqueIdentifier = uniqueIdentifier;
+		this.rank = rank;
 		this.isRoot = isRoot;
 		this.nodeDependencies = new ArrayList<>();
 	}
@@ -78,5 +82,51 @@ public class CatalogNode {
 	}
 
 
+	public Long getRank() {
+		return rank;
+	}
 
+	public void setRank(Long rank) {
+		this.rank = rank;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+
+		if (o == null || getClass() != o.getClass()) return false;
+
+		CatalogNode that = (CatalogNode) o;
+
+		return new EqualsBuilder()
+				.append(rank, that.rank)
+				.append(uniqueIdentifier, that.uniqueIdentifier)
+				.isEquals();
+	}
+
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 37)
+				.append(rank)
+				.append(uniqueIdentifier)
+				.toHashCode();
+	}
+
+	@Override
+	public TailCall get() {
+		return this;
+	}
+
+	@Override
+	public boolean terminated() {
+		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "CatalogNode{" +
+				"uniqueIdentifier='" + uniqueIdentifier + '\'' +
+				", nodeDependencies=" + nodeDependencies +
+				'}';
+	}
 }

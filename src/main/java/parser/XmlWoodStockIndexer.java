@@ -1,11 +1,14 @@
 package parser;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import org.codehaus.stax2.XMLInputFactory2;
 import org.codehaus.stax2.XMLStreamReader2;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 import java.io.*;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -61,7 +64,7 @@ public class XmlWoodStockIndexer {
 		}
 	}
 
-	public Map<String, CatalogNode> getNodeMap() {
+	public Multimap<String, CatalogNode> getNodeMap() {
 		return nodeFactory.getNodeMap();
 	}
 
@@ -89,11 +92,11 @@ public class XmlWoodStockIndexer {
 				config.getUniqueIdentifierTag().equalsIgnoreCase(tagStack.peek())) {
 
 			String uniqueIdentifier = reader.getText();
-			CatalogNode catalogNode = nodeFactory.getNode(uniqueIdentifier);
-			if (catalogNode == null) {
-				nodeFactory.generateNode(reader.getText(), isLatestReadNodeRoot);
+			Collection<CatalogNode> catalogNodes = nodeFactory.getNode(uniqueIdentifier);
+			if (catalogNodes.isEmpty() || (!catalogNodes.isEmpty() && catalogNodes.stream().noneMatch(CatalogNode::hasChildren))) {
+				nodeFactory.generateNode(reader.getText(), (long) (catalogNodes.size() + 1), isLatestReadNodeRoot);
 			} else {
-				catalogNode.setRoot(isLatestReadNodeRoot);
+				catalogNodes.forEach(catalogNode -> catalogNode.setRoot(isLatestReadNodeRoot));
 			}
 			lastReadUniqueIdentifier = uniqueIdentifier;
 		}
@@ -113,12 +116,14 @@ public class XmlWoodStockIndexer {
 				config.getDependencyTag().equalsIgnoreCase(tagStack.peek())) {
 
 			String dependencyUniqueIdentifier = reader.getText();
-			CatalogNode catalogNode = nodeFactory.getNode(dependencyUniqueIdentifier);
-			if (catalogNode == null) {
-				catalogNode = nodeFactory.generateNode(dependencyUniqueIdentifier, false);
+			Collection<CatalogNode> catalogNodes = nodeFactory.getNode(dependencyUniqueIdentifier);
+			if (catalogNodes.isEmpty()) {
+				CatalogNode catalogNode = nodeFactory.generateNode(dependencyUniqueIdentifier, (long) (catalogNodes.size() + 1),false);
 			}
 
-			catalogNode.addDependency(lastReadUniqueIdentifier);
+			Collection<CatalogNode> catalogNodes2 = nodeFactory.getNode(dependencyUniqueIdentifier);
+			catalogNodes2.forEach(catalogNode -> catalogNode.addDependency(lastReadUniqueIdentifier));
+
 			lastReadUniqueIdentifier = null;
 		}
 	}
@@ -138,24 +143,24 @@ public class XmlWoodStockIndexer {
 
 	private static final class NodeFactory {
 
-		private Map<String, CatalogNode> nodeMap;
+		private Multimap<String, CatalogNode> nodeMap;
 
 		private NodeFactory() {
-			this.nodeMap = new HashMap<>();
+			this.nodeMap = ArrayListMultimap.create();
 		}
 
-		private CatalogNode generateNode(String uniqueIdentifierValue, boolean isRootNode) {
-			CatalogNode catalogNode = new CatalogNode(uniqueIdentifierValue,isRootNode);
-			nodeMap.putIfAbsent(uniqueIdentifierValue, catalogNode);
+		private CatalogNode generateNode(String uniqueIdentifierValue, Long rank, boolean isRootNode) {
+			CatalogNode catalogNode = new CatalogNode(uniqueIdentifierValue, rank, isRootNode);
+			nodeMap.put(uniqueIdentifierValue, catalogNode);
 
 			return catalogNode;
 		}
 
-		private CatalogNode getNode(String uniqueIdentifier) {
+		private Collection<CatalogNode> getNode(String uniqueIdentifier) {
 			return nodeMap.get(uniqueIdentifier);
 		}
 
-		private Map<String, CatalogNode> getNodeMap() {
+		private Multimap<String, CatalogNode> getNodeMap() {
 			return nodeMap;
 		}
 

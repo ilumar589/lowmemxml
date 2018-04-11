@@ -1,5 +1,7 @@
 package parser;
 
+import com.google.common.collect.Multimap;
+
 import java.util.Iterator;
 import java.util.Map;
 
@@ -7,7 +9,7 @@ public class XmlCatalogIterator implements Iterator<CatalogNode>{
 
 	private XmlCatalogMapParser catalogNodeMapParser;
 
-	public XmlCatalogIterator(XmlWoodStockConfig config, Map<String, CatalogNode> catalogNodeMap) {
+	public XmlCatalogIterator(XmlWoodStockConfig config, Multimap<String, CatalogNode> catalogNodeMap) {
 		this.catalogNodeMapParser = new XmlCatalogMapParser(new XmlWoodStockCatalogParser(config, catalogNodeMap));
 	}
 

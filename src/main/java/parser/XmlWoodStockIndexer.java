@@ -1,11 +1,14 @@
 package parser;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import org.codehaus.stax2.XMLInputFactory2;
 import org.codehaus.stax2.XMLStreamReader2;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 import java.io.*;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -20,6 +23,8 @@ public class XmlWoodStockIndexer {
 
 	private NodeFactory nodeFactory;
 
+	private String lastReadPackaging;
+
 	private String lastReadBarcode;
 
 	private String lastReadVendorProductNumber;
@@ -28,10 +33,15 @@ public class XmlWoodStockIndexer {
 
 	private boolean isLatestReadNodeRoot = false;
 
+	//-----------------------------------
+
+	private Multimap<String, CatalogIdentifier> readDependencyMap;
+
 	public XmlWoodStockIndexer(XmlWoodStockConfig config) {
 		this.config = config;
 		this.tagStack = new Stack<>();
 		this.nodeFactory = new NodeFactory();
+		this.readDependencyMap = ArrayListMultimap.create();
 
 		XMLInputFactory2 factory = (XMLInputFactory2) XMLInputFactory2.newInstance();
 
@@ -80,15 +90,17 @@ public class XmlWoodStockIndexer {
 
 		determineVendorProductNumber();
 
-		determineDependency();
+		determineDependency2();
+
+//		determineDependency();
 
 	}
 
 	private void determineRootNode() {
-		if (config.getRootTag().equalsIgnoreCase(tagStack.peek()) && config.getRootTagValue().equalsIgnoreCase(reader.getText())) {
-			isLatestReadNodeRoot = true;
-		} else if (config.getRootTag().equalsIgnoreCase(tagStack.peek()) && !config.getRootTagValue().equalsIgnoreCase(reader.getText())) {
-			isLatestReadNodeRoot = false;
+		if (config.getRootTag().equalsIgnoreCase(tagStack.peek())) {
+			lastReadPackaging = reader.getText();
+
+			isLatestReadNodeRoot = config.getRootTagValue().equalsIgnoreCase(lastReadPackaging);
 		}
 	}
 
@@ -104,6 +116,14 @@ public class XmlWoodStockIndexer {
 				config.getUniqueIdentifierTag().equalsIgnoreCase(tagStack.peek())) {
 
 			lastReadBarcode = reader.getText();
+		}
+	}
+
+	private void determineDependency2() {
+		if (config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
+				config.getDependencyTag().equalsIgnoreCase(tagStack.peek())) {
+
+			readDependencyMap.put(reader.getText(), new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging));
 		}
 	}
 
@@ -124,15 +144,16 @@ public class XmlWoodStockIndexer {
 
 			String dependencyBarcode = reader.getText();
 
-			if (dependencyBarcode != null && lastReadVendorProductNumber != null) {
-				CatalogIdentifier catalogIdentifier = new CatalogIdentifier(dependencyBarcode, lastReadVendorProductNumber);
+			if (dependencyBarcode != null && lastReadVendorProductNumber != null && lastReadPackaging != null) {
+				CatalogIdentifier catalogIdentifier = new CatalogIdentifier(dependencyBarcode, lastReadVendorProductNumber, lastReadPackaging);
 
 				CatalogNode catalogNode = nodeFactory.getNode(catalogIdentifier);
+
 				if (catalogNode == null) {
-					catalogNode = nodeFactory.generateNode(catalogIdentifier, false);
+					catalogNode = nodeFactory.generateNode(new CatalogIdentifier(dependencyBarcode, lastReadVendorProductNumber, null), false);
 				}
 
-				catalogNode.addDependency(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber));
+				catalogNode.addDependency(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging));
 			}
 
 		}
@@ -153,25 +174,51 @@ public class XmlWoodStockIndexer {
 					config.getVendorProductNumberTypeValue().equalsIgnoreCase(reader.getText())) {
 				lastReadVendorProductNumber = tempVendorProductNumber;
 
-				generateNode();
+				generateNode2();
+//				generateNode();
 
 			}
 		}
 	}
 
+	private void generateNode2() {
+		if (lastReadBarcode != null && lastReadVendorProductNumber != null && lastReadPackaging != null) {
+			CatalogIdentifier catalogIdentifier = new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging);
+
+			Collection<CatalogIdentifier> dependencyIdentifier = readDependencyMap.get(lastReadBarcode);
+
+			if (!dependencyIdentifier.isEmpty()) {
+				CatalogNode currentNode = nodeFactory.generateNode(catalogIdentifier, false);
+				dependencyIdentifier.forEach(currentNode::addDependency);
+
+				readDependencyMap.removeAll(lastReadBarcode);
+
+			} else {
+				nodeFactory.generateNode(catalogIdentifier, isLatestReadNodeRoot);
+			}
+		}
+	}
+
 	private void generateNode() {
-		if (lastReadBarcode != null && lastReadVendorProductNumber != null) {
-			CatalogIdentifier catalogIdentifier = new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber);
+		if (lastReadBarcode != null && lastReadVendorProductNumber != null && lastReadPackaging != null) {
+			CatalogIdentifier catalogIdentifier = new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging);
 
 			CatalogNode catalogNode = nodeFactory.getNode(catalogIdentifier);
 
 			if (catalogNode == null) {
-				nodeFactory.generateNode(catalogIdentifier, isLatestReadNodeRoot);
+
+				catalogNode = nodeFactory.getNode(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, null));
+
+				if (catalogNode != null) {
+					// update identifier
+					catalogIdentifier.setPackaging(lastReadPackaging);
+				} else {
+					nodeFactory.generateNode(catalogIdentifier, isLatestReadNodeRoot);
+				}
 			} else {
 				/** update is root status **/
 				catalogNode.setRoot(isLatestReadNodeRoot);
 			}
-
 		}
 	}
 

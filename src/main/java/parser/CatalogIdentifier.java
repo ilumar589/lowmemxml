@@ -9,9 +9,12 @@ public class CatalogIdentifier {
 
 	private String vendorProductNumber;
 
-	public CatalogIdentifier(String barcode, String vendorProductNumber) {
+	private String packaging;
+
+	public CatalogIdentifier(String barcode, String vendorProductNumber, String packaging) {
 		this.barcode = barcode;
 		this.vendorProductNumber = vendorProductNumber;
+		this.packaging = packaging;
 	}
 
 	public String getBarcode() {
@@ -30,6 +33,14 @@ public class CatalogIdentifier {
 		this.vendorProductNumber = vendorProductNumber;
 	}
 
+	public String getPackaging() {
+		return packaging;
+	}
+
+	public void setPackaging(String packaging) {
+		this.packaging = packaging;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -41,6 +52,7 @@ public class CatalogIdentifier {
 		return new EqualsBuilder()
 				.append(barcode, that.barcode)
 				.append(vendorProductNumber, that.vendorProductNumber)
+				.append(packaging, that.packaging)
 				.isEquals();
 	}
 
@@ -49,6 +61,7 @@ public class CatalogIdentifier {
 		return new HashCodeBuilder(17, 37)
 				.append(barcode)
 				.append(vendorProductNumber)
+				.append(packaging)
 				.toHashCode();
 	}
 
@@ -57,6 +70,7 @@ public class CatalogIdentifier {
 		return "CatalogIdentifier{" +
 				"barcode='" + barcode + '\'' +
 				", vendorProductNumber='" + vendorProductNumber + '\'' +
+				", packaging='" + packaging + '\'' +
 				'}';
 	}
 }

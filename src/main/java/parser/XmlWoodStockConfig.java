@@ -32,6 +32,8 @@ public class XmlWoodStockConfig {
 
 	private String vendorProductNumberTypeValue;
 
+	private String packagingTag;
+
 	private XmlWoodStockConfig(Builder builder) {
 		this.filePath = builder.filePath;
 
@@ -62,6 +64,8 @@ public class XmlWoodStockConfig {
 		this.vendorProductNumberTypeTag = builder.vendorProductNumberTypeTag;
 
 		this.vendorProductNumberTypeValue = builder.vendorProductNumberTypeValue;
+
+		this.packagingTag = builder.packagingTag;
 	}
 
 	public String getFilePath() {
@@ -156,6 +160,8 @@ public class XmlWoodStockConfig {
 
 		private String vendorProductNumberTypeValue;
 
+		private String packagingTag;
+
 		public static Builder xmlWoodStockConfig() {return new Builder();}
 
 		public Builder withFilePath(String filePath) {
@@ -230,6 +236,11 @@ public class XmlWoodStockConfig {
 
 		public Builder withVendorProductNumberTypeValue(String vendorProductNumberTypeValue) {
 			this.vendorProductNumberTypeValue = vendorProductNumberTypeValue;
+			return this;
+		}
+
+		public Builder withPackagingTag(String packagingTag) {
+			this.packagingTag = packagingTag;
 			return this;
 		}
 

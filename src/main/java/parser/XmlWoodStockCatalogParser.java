@@ -30,6 +30,8 @@ public class XmlWoodStockCatalogParser {
 
 	private String lastReadBarcode;
 
+	private String lastReadPackaging;
+
 	private String lastReadVendorProductNumber;
 
 	private String tempVendorProductNumber;
@@ -131,14 +133,23 @@ public class XmlWoodStockCatalogParser {
 
 	private void handleCharacters(Characters characters) {
 
+		determinePackaging(characters.getData());
+
 		determineBarcode(characters.getData());
 
 		determineVendorProductNumber(characters.getData());
 	}
 
+	private void determinePackaging(String text) {
+		if (config.getRootTag().equalsIgnoreCase(tagStack.peek())) {
+			lastReadPackaging = text;
+
+		}
+	}
+
 	private void setLastNode() {
 		if (lastReadBarcode != null && lastReadVendorProductNumber != null) {
-			lastReadCatalogNode = catalogNodeMap.get(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber));
+			lastReadCatalogNode = catalogNodeMap.get(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging));
 
 			if (lastReadCatalogNode == null) {
 				System.out.println("No node found for barcode: " + lastReadBarcode + " and vendor product number: " + lastReadVendorProductNumber);

@@ -86,9 +86,9 @@ public class XmlCatalogMapParser {
     private CatalogNode parseRootDependency(CatalogNode root, CatalogNode currentNode, CatalogNode previousNode) {
         if (!currentNode.hasChildren() && visitedNodes.contains(currentNode.getUniqueIdentifier())) {
 
-            if (currentNode.getUniqueIdentifier().equals(new CatalogIdentifier("04049500255431", "1698705"))) {
-                System.out.println();
-            }
+//            if (currentNode.getUniqueIdentifier().equals(new CatalogIdentifier("04049500255431", "1698705"))) {
+//                System.out.println();
+//            }
 
 //            currentNode.setBaseContent(root.getContent());
 
@@ -136,7 +136,7 @@ public class XmlCatalogMapParser {
             }
         }
 
-        CatalogNode testCatalogNode = catalogNodeMap.get(childNodeUniqueIdentifier.get());
+//        CatalogNode testCatalogNode = catalogNodeMap.get(childNodeUniqueIdentifier.get());
 //        if (testCatalogNode == null) {
 //            System.out.println("Node with identifier: " + childNodeUniqueIdentifier.get() + " is not present in map ");
 //        }

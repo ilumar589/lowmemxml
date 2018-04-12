@@ -35,13 +35,13 @@ public class XmlWoodStockIndexer {
 
 	//-----------------------------------
 
-	private Multimap<String, CatalogIdentifier> readDependencyMap;
+	private Multimap<String, CatalogNode> unfinishedDependencies;
 
 	public XmlWoodStockIndexer(XmlWoodStockConfig config) {
 		this.config = config;
 		this.tagStack = new Stack<>();
 		this.nodeFactory = new NodeFactory();
-		this.readDependencyMap = ArrayListMultimap.create();
+		this.unfinishedDependencies = ArrayListMultimap.create();
 
 		XMLInputFactory2 factory = (XMLInputFactory2) XMLInputFactory2.newInstance();
 
@@ -88,16 +88,15 @@ public class XmlWoodStockIndexer {
 
 		determineBarcode();
 
-		determineVendorProductNumber();
+		CatalogNode currentCatalogNode = determineVendorProductNumber();
 
-		determineDependency2();
-
-//		determineDependency();
+		determineDependency(currentCatalogNode);
 
 	}
 
 	private void determineRootNode() {
 		if (config.getRootTag().equalsIgnoreCase(tagStack.peek())) {
+
 			lastReadPackaging = reader.getText();
 
 			isLatestReadNodeRoot = config.getRootTagValue().equalsIgnoreCase(lastReadPackaging);
@@ -119,47 +118,36 @@ public class XmlWoodStockIndexer {
 		}
 	}
 
-	private void determineDependency2() {
-		if (config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
+	private void determineDependency(CatalogNode currentCatalogNode) {
+		if (currentCatalogNode != null &&
+				config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
 				config.getDependencyTag().equalsIgnoreCase(tagStack.peek())) {
+
+			checkCurrentNodeForUnfinishedDependencies(currentCatalogNode);
 
 			readDependencyMap.put(reader.getText(), new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging));
 		}
 	}
 
-	private void determineDependency() {
-		/**
-		 * If while reading the xml tags inside our container tag
-		 * we find a dependency we create a @CatalogNode with the unique
-		 * identifier inside that dependency if it's not already
-		 * created. Afterwards we add a dependency to this node
-		 * which is the @lastReadUniqueIdentifier  found while
-		 * reading previous tags inside our container tag. The
-		 * graph will contain base units as root nodes and nodes
-		 * that are dependent upon another node are children of
-		 * that respective node
-		 */
-		if (config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
-				config.getDependencyTag().equalsIgnoreCase(tagStack.peek())) {
+	private void checkCurrentNodeForUnfinishedDependencies(CatalogNode currentNode) {
 
-			String dependencyBarcode = reader.getText();
+		// unfinished dependencies contain only the barcode as an identifier because
+		// the child trade item only has that property while reading
+		Collection<CatalogNode> dependantCreatedNodes = unfinishedDependencies.get(currentNode.getUniqueIdentifier().getBarcode());
 
-			if (dependencyBarcode != null && lastReadVendorProductNumber != null && lastReadPackaging != null) {
-				CatalogIdentifier catalogIdentifier = new CatalogIdentifier(dependencyBarcode, lastReadVendorProductNumber, lastReadPackaging);
-
-				CatalogNode catalogNode = nodeFactory.getNode(catalogIdentifier);
-
-				if (catalogNode == null) {
-					catalogNode = nodeFactory.generateNode(new CatalogIdentifier(dependencyBarcode, lastReadVendorProductNumber, null), false);
-				}
-
-				catalogNode.addDependency(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging));
-			}
-
+		if (!dependantCreatedNodes.isEmpty()) {
+			dependantCreatedNodes.forEach(node -> currentNode.addDependency(node.getUniqueIdentifier()));
 		}
 	}
 
-	private void determineVendorProductNumber() {
+	private void checkCurrentNodeDependencyStatus(String childBarcode, CatalogNode currentNode) {
+		// check if the child has already been read
+		// the only information for the child at this point is the barcode
+
+	}
+
+
+	private CatalogNode determineVendorProductNumber() {
 		/** if we are inside the vendor product number containing tag**/
 		if (config.getVendorProductNumberContainingTag().equalsIgnoreCase(getPreviousElement(2))) {
 
@@ -174,54 +162,19 @@ public class XmlWoodStockIndexer {
 					config.getVendorProductNumberTypeValue().equalsIgnoreCase(reader.getText())) {
 				lastReadVendorProductNumber = tempVendorProductNumber;
 
-				generateNode2();
-//				generateNode();
-
+				return generateNode();
 			}
 		}
+		return null;
 	}
 
-	private void generateNode2() {
+	private CatalogNode generateNode() {
 		if (lastReadBarcode != null && lastReadVendorProductNumber != null && lastReadPackaging != null) {
-			CatalogIdentifier catalogIdentifier = new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging);
-
-			Collection<CatalogIdentifier> dependencyIdentifier = readDependencyMap.get(lastReadBarcode);
-
-			if (!dependencyIdentifier.isEmpty()) {
-				CatalogNode currentNode = nodeFactory.generateNode(catalogIdentifier, false);
-				dependencyIdentifier.forEach(currentNode::addDependency);
-
-				readDependencyMap.removeAll(lastReadBarcode);
-
-			} else {
-				nodeFactory.generateNode(catalogIdentifier, isLatestReadNodeRoot);
-			}
+			return nodeFactory.generateNode(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging), isLatestReadNodeRoot);
 		}
+
+		return null;
 	}
-
-	private void generateNode() {
-		if (lastReadBarcode != null && lastReadVendorProductNumber != null && lastReadPackaging != null) {
-			CatalogIdentifier catalogIdentifier = new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging);
-
-			CatalogNode catalogNode = nodeFactory.getNode(catalogIdentifier);
-
-			if (catalogNode == null) {
-
-				catalogNode = nodeFactory.getNode(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, null));
-
-				if (catalogNode != null) {
-					// update identifier
-					catalogIdentifier.setPackaging(lastReadPackaging);
-				} else {
-					nodeFactory.generateNode(catalogIdentifier, isLatestReadNodeRoot);
-				}
-			} else {
-				/** update is root status **/
-				catalogNode.setRoot(isLatestReadNodeRoot);
-			}
-		}
-	}
-
 
 	private void handleEndElement() {
 		tagStack.pop();

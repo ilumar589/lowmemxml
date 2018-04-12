@@ -8,10 +8,7 @@ import org.codehaus.stax2.XMLStreamReader2;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 import java.io.*;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 public class XmlWoodStockIndexer {
 
@@ -37,11 +34,14 @@ public class XmlWoodStockIndexer {
 
 	private Multimap<String, CatalogNode> unfinishedDependencies;
 
+	private Multimap<String, CatalogNode> visitedNodes;
+
 	public XmlWoodStockIndexer(XmlWoodStockConfig config) {
 		this.config = config;
 		this.tagStack = new Stack<>();
 		this.nodeFactory = new NodeFactory();
 		this.unfinishedDependencies = ArrayListMultimap.create();
+		this.visitedNodes = ArrayListMultimap.create();
 
 		XMLInputFactory2 factory = (XMLInputFactory2) XMLInputFactory2.newInstance();
 
@@ -88,9 +88,9 @@ public class XmlWoodStockIndexer {
 
 		determineBarcode();
 
-		CatalogNode currentCatalogNode = determineVendorProductNumber();
+		determineVendorProductNumber();
 
-		determineDependency(currentCatalogNode);
+		determineDependency();
 
 	}
 
@@ -118,14 +118,13 @@ public class XmlWoodStockIndexer {
 		}
 	}
 
-	private void determineDependency(CatalogNode currentCatalogNode) {
-		if (currentCatalogNode != null &&
-				config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
+	private void determineDependency() {
+		if (config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
 				config.getDependencyTag().equalsIgnoreCase(tagStack.peek())) {
 
-			checkCurrentNodeForUnfinishedDependencies(currentCatalogNode);
+			CatalogNode currentCatalogNode = nodeFactory.getNode(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging));
 
-			readDependencyMap.put(reader.getText(), new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging));
+			checkCurrentNodeForVisitedDependencies(reader.getText(), currentCatalogNode);
 		}
 	}
 
@@ -136,18 +135,37 @@ public class XmlWoodStockIndexer {
 		Collection<CatalogNode> dependantCreatedNodes = unfinishedDependencies.get(currentNode.getUniqueIdentifier().getBarcode());
 
 		if (!dependantCreatedNodes.isEmpty()) {
-			dependantCreatedNodes.forEach(node -> currentNode.addDependency(node.getUniqueIdentifier()));
+			dependantCreatedNodes.forEach(node -> {
+				// check to see that the nodes belong to tha same product
+				if (node.getUniqueIdentifier().getVendorProductNumber().equalsIgnoreCase(currentNode.getUniqueIdentifier().getVendorProductNumber())) {
+					currentNode.addDependency(node.getUniqueIdentifier());
+				}
+			});
 		}
 	}
 
-	private void checkCurrentNodeDependencyStatus(String childBarcode, CatalogNode currentNode) {
+	private void checkCurrentNodeForVisitedDependencies(String childBarcode, CatalogNode currentNode) {
 		// check if the child has already been read
-		// the only information for the child at this point is the barcode
+		Collection<CatalogNode> visitedNodesWithSameBarcode = visitedNodes.get(childBarcode);
 
+		if (!visitedNodesWithSameBarcode.isEmpty()) {
+			// if the nodes are from the same product
+			Optional<CatalogNode> alreadyVisitedNode = visitedNodesWithSameBarcode.stream()
+					.filter(visitedNode -> visitedNode.getUniqueIdentifier().getVendorProductNumber().equalsIgnoreCase(currentNode.getUniqueIdentifier().getVendorProductNumber()))
+					.findFirst();
+
+			if (alreadyVisitedNode.isPresent()) {
+				alreadyVisitedNode.get().addDependency(currentNode.getUniqueIdentifier());
+			} else {
+				unfinishedDependencies.put(childBarcode, currentNode);
+			}
+		} else {
+			unfinishedDependencies.put(childBarcode, currentNode);
+		}
 	}
 
 
-	private CatalogNode determineVendorProductNumber() {
+	private void determineVendorProductNumber() {
 		/** if we are inside the vendor product number containing tag**/
 		if (config.getVendorProductNumberContainingTag().equalsIgnoreCase(getPreviousElement(2))) {
 
@@ -162,18 +180,20 @@ public class XmlWoodStockIndexer {
 					config.getVendorProductNumberTypeValue().equalsIgnoreCase(reader.getText())) {
 				lastReadVendorProductNumber = tempVendorProductNumber;
 
-				return generateNode();
+				generateNode();
 			}
 		}
-		return null;
 	}
 
-	private CatalogNode generateNode() {
+	private void generateNode() {
 		if (lastReadBarcode != null && lastReadVendorProductNumber != null && lastReadPackaging != null) {
-			return nodeFactory.generateNode(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging), isLatestReadNodeRoot);
-		}
 
-		return null;
+			CatalogNode catalogNode = nodeFactory.generateNode(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging), isLatestReadNodeRoot);
+
+			visitedNodes.put(lastReadBarcode, catalogNode);
+
+			checkCurrentNodeForUnfinishedDependencies(catalogNode);
+		}
 	}
 
 	private void handleEndElement() {

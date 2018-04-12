@@ -143,7 +143,6 @@ public class XmlWoodStockCatalogParser {
 	private void determinePackaging(String text) {
 		if (config.getRootTag().equalsIgnoreCase(tagStack.peek())) {
 			lastReadPackaging = text;
-
 		}
 	}
 

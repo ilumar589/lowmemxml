@@ -28,7 +28,7 @@ public class XmlCatalogMapParser {
 
         this.catalogNodeMap = xmlWoodStockCatalogParser.getCatalogNodeMap();
 
-        this.visitedNodes = new HashSet<>();
+        this.visitedNodes = new ArrayList<>();
 
         this.unfinishedRoots = new Stack<>();
     }

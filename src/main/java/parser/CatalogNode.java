@@ -2,6 +2,7 @@ package parser;
 
 import org.w3c.dom.Node;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -15,7 +16,7 @@ public class CatalogNode {
 	public CatalogNode(CatalogIdentifier uniqueIdentifier, boolean isRoot) {
 		this.uniqueIdentifier = uniqueIdentifier;
 		this.isRoot = isRoot;
-		this.nodeDependencies = new HashSet<>();
+		this.nodeDependencies = new ArrayList<>();
 	}
 
 	public CatalogNode(CatalogNode catalogNode) {

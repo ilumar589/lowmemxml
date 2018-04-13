@@ -5,7 +5,9 @@ import com.google.common.collect.Multimap;
 import org.codehaus.stax2.XMLInputFactory2;
 import org.codehaus.stax2.XMLStreamReader2;
 
+import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.XMLEvent;
 import java.io.*;
 import java.util.*;
@@ -14,7 +16,7 @@ public class XmlWoodStockIndexer {
 
 	private XmlWoodStockConfig config;
 
-	private XMLStreamReader2 reader;
+	private XMLStreamReader reader;
 
 	private Stack<String> tagStack;
 
@@ -43,10 +45,10 @@ public class XmlWoodStockIndexer {
 		this.unfinishedDependencies = ArrayListMultimap.create();
 		this.visitedNodes = ArrayListMultimap.create();
 
-		XMLInputFactory2 factory = (XMLInputFactory2) XMLInputFactory2.newInstance();
+		XMLInputFactory factory =  XMLInputFactory.newInstance();
 
 		try {
-			this.reader = (XMLStreamReader2) factory.createXMLStreamReader(new BufferedReader(new InputStreamReader(new FileInputStream(config.getFilePath()), config.getEncoding())));
+			this.reader = factory.createXMLStreamReader(new BufferedReader(new InputStreamReader(new FileInputStream(config.getFilePath()), config.getEncoding())));
 		} catch (XMLStreamException | UnsupportedEncodingException | FileNotFoundException e) {
 			e.printStackTrace();
 		}

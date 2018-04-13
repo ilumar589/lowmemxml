@@ -1,5 +1,6 @@
 package parser;
 
+import com.google.common.collect.Multimap;
 import com.sun.org.apache.xpath.internal.jaxp.XPathFactoryImpl;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -16,7 +17,7 @@ public class XmlCatalogMapParser {
 
     private XmlWoodStockCatalogParser xmlWoodStockCatalogParser;
 
-    private Map<CatalogIdentifier, CatalogNode> catalogNodeMap;
+    private Multimap<CatalogIdentifier, CatalogNode> catalogNodeMap;
 
     private Collection<CatalogIdentifier> visitedNodes;
 
@@ -56,7 +57,8 @@ public class XmlCatalogMapParser {
         visitNode(catalogNode.getUniqueIdentifier(), catalogNode.isRoot());
 
         if (!unfinishedRoots.isEmpty()) {
-            return catalogNodeMap.get(unfinishedRoots.peek());
+            //TODO figure it out
+            return catalogNodeMap.get(unfinishedRoots.peek()).stream().findFirst().get();
         }
 
         return catalogNode;
@@ -67,7 +69,7 @@ public class XmlCatalogMapParser {
 
             unfinishedRoots.pop();
 
-            catalogNodeMap.remove(catalogNode.getUniqueIdentifier());
+            catalogNodeMap.remove(catalogNode.getUniqueIdentifier(), catalogNode);
 
             return true;
         }
@@ -116,7 +118,7 @@ public class XmlCatalogMapParser {
 
             previousNode.removeDependency(currentNode.getUniqueIdentifier());
 
-            catalogNodeMap.remove(currentNode.getUniqueIdentifier());
+            catalogNodeMap.remove(currentNode.getUniqueIdentifier(), currentNode);
 
             visitedNodes.remove(currentNode.getUniqueIdentifier());
 
@@ -141,7 +143,7 @@ public class XmlCatalogMapParser {
 //            System.out.println("Node with identifier: " + childNodeUniqueIdentifier.get() + " is not present in map ");
 //        }
 
-        return parseRootDependency(root, catalogNodeMap.get(childNodeUniqueIdentifier.get()), currentNode);
+        return parseRootDependency(root, catalogNodeMap.get(childNodeUniqueIdentifier.get()).stream().findFirst().get(), currentNode);
     }
 
 }

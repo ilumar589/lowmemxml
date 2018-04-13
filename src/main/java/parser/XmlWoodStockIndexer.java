@@ -75,7 +75,7 @@ public class XmlWoodStockIndexer {
 		}
 	}
 
-	public Map<CatalogIdentifier, CatalogNode> getNodeMap() {
+	public Multimap<CatalogIdentifier, CatalogNode> getNodeMap() {
 		return nodeFactory.getNodeMap();
 	}
 
@@ -122,7 +122,8 @@ public class XmlWoodStockIndexer {
 		if (config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
 				config.getDependencyTag().equalsIgnoreCase(tagStack.peek())) {
 
-			CatalogNode currentCatalogNode = nodeFactory.getNode(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging));
+			//TODO figure it out
+			CatalogNode currentCatalogNode = nodeFactory.getNode(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging)).stream().findFirst().get();
 
 			checkCurrentNodeForVisitedDependencies(reader.getText(), currentCatalogNode);
 		}
@@ -211,24 +212,25 @@ public class XmlWoodStockIndexer {
 
 	private static final class NodeFactory {
 
-		private Map<CatalogIdentifier, CatalogNode> nodeMap;
+		private Multimap<CatalogIdentifier, CatalogNode> nodeMap;
 
 		private NodeFactory() {
-			this.nodeMap = new HashMap<>();
+			this.nodeMap = ArrayListMultimap.create();
 		}
 
-		private CatalogNode generateNode(CatalogIdentifier uniqueIdentifer, boolean isRootNode) {
-			CatalogNode catalogNode = new CatalogNode(uniqueIdentifer, isRootNode);
-			nodeMap.putIfAbsent(uniqueIdentifer, catalogNode);
+		private CatalogNode generateNode(CatalogIdentifier uniqueIdentifier, boolean isRootNode) {
+			CatalogNode catalogNode = new CatalogNode(uniqueIdentifier, isRootNode);
+
+			nodeMap.put(uniqueIdentifier, catalogNode);
 
 			return catalogNode;
 		}
 
-		private CatalogNode getNode(CatalogIdentifier uniqueIdentifier) {
+		private Collection<CatalogNode> getNode(CatalogIdentifier uniqueIdentifier) {
 			return nodeMap.get(uniqueIdentifier);
 		}
 
-		private Map<CatalogIdentifier, CatalogNode> getNodeMap() {
+		private Multimap<CatalogIdentifier, CatalogNode> getNodeMap() {
 			return nodeMap;
 		}
 

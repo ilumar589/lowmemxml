@@ -1,5 +1,6 @@
 package parser;
 
+import com.google.common.collect.Multimap;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -9,16 +10,13 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.*;
 import javax.xml.stream.events.*;
 import java.io.*;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 public class XmlWoodStockCatalogParser {
 
 	private XmlWoodStockConfig config;
 
-	private Map<CatalogIdentifier, CatalogNode> catalogNodeMap;
+	private Multimap<CatalogIdentifier, CatalogNode> catalogNodeMap;
 
 	private XMLEventReader reader;
 
@@ -36,7 +34,7 @@ public class XmlWoodStockCatalogParser {
 
 	private String tempVendorProductNumber;
 
-	public XmlWoodStockCatalogParser(XmlWoodStockConfig config, Map<CatalogIdentifier, CatalogNode> catalogNodeMap) {
+	public XmlWoodStockCatalogParser(XmlWoodStockConfig config, Multimap<CatalogIdentifier, CatalogNode> catalogNodeMap) {
 		this.config = config;
 
 		this.catalogNodeMap = catalogNodeMap;
@@ -110,7 +108,7 @@ public class XmlWoodStockCatalogParser {
 		return lastReadCatalogNode;
 	}
 
-	public Map<CatalogIdentifier, CatalogNode> getCatalogNodeMap() {
+	public Multimap<CatalogIdentifier, CatalogNode> getCatalogNodeMap() {
 		return catalogNodeMap;
 	}
 
@@ -141,17 +139,21 @@ public class XmlWoodStockCatalogParser {
 	}
 
 	private void determinePackaging(String text) {
-		if (config.getRootTag().equalsIgnoreCase(tagStack.peek())) {
+		if (!tagStack.isEmpty() && config.getRootTag().equalsIgnoreCase(tagStack.peek())) {
 			lastReadPackaging = text;
 		}
 	}
 
 	private void setLastNode() {
-		if (lastReadBarcode != null && lastReadVendorProductNumber != null) {
-			lastReadCatalogNode = catalogNodeMap.get(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging));
+		if (lastReadBarcode != null && lastReadVendorProductNumber != null && lastReadPackaging != null) {
 
-			if (lastReadCatalogNode == null) {
+			//TODO figure it out
+			Optional<CatalogNode> foundNode = catalogNodeMap.get(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging)).stream().findFirst();
+
+			if (!foundNode.isPresent()) {
 				System.out.println("No node found for barcode: " + lastReadBarcode + " and vendor product number: " + lastReadVendorProductNumber);
+			} else {
+				lastReadCatalogNode = foundNode.get();
 			}
 		}
 	}

@@ -45,7 +45,7 @@ public class XmlCatalogMapParser {
             return catalogNode;
         }
 
-        return catalogNode.isRoot() ? parseRootDependency(new CatalogNode(catalogNode), catalogNode, null) : null;
+        return catalogNode.isRoot() ? parseRootDependency(catalogNode, null) : null;
     }
 
     private CatalogNode getNode() {
@@ -85,7 +85,7 @@ public class XmlCatalogMapParser {
         }
     }
 
-    private CatalogNode parseRootDependency(CatalogNode root, CatalogNode currentNode, CatalogNode previousNode) {
+    private CatalogNode parseRootDependency(CatalogNode currentNode, CatalogNode previousNode) {
         if (!currentNode.hasChildren() && visitedNodes.contains(currentNode.getUniqueIdentifier())) {
 
 //            if (currentNode.getUniqueIdentifier().equals(new CatalogIdentifier("04049500255431", "1698705"))) {
@@ -96,7 +96,7 @@ public class XmlCatalogMapParser {
 
             Node n1 = currentNode.getContent();
             Document document = n1.getOwnerDocument();
-            Node docNode = document.importNode(root.getContent(), true);
+            Node docNode = document.importNode(previousNode.getContent(), true);
             docNode.appendChild(currentNode.getContent());
             currentNode.setContent(docNode);
 
@@ -143,7 +143,7 @@ public class XmlCatalogMapParser {
 //            System.out.println("Node with identifier: " + childNodeUniqueIdentifier.get() + " is not present in map ");
 //        }
 
-        return parseRootDependency(root, catalogNodeMap.get(childNodeUniqueIdentifier.get()).stream().findFirst().get(), currentNode);
+        return parseRootDependency(catalogNodeMap.get(childNodeUniqueIdentifier.get()).stream().findFirst().get(), currentNode);
     }
 
 }

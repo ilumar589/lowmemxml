@@ -5,7 +5,7 @@ import static parser.XmlWoodStockConfig.Builder.xmlWoodStockConfig;
 public class Main {
 
 	private static final String XML_FILE = "E:\\projects\\lowmem\\src\\main\\java\\CIN_04039239500025.6819.xml";
-	private static final String GRAPH1 = "D:\\WorkZone\\Projects\\lowmemxml\\src\\main\\java\\graph1.xml";
+	private static final String GRAPH1 = "E:\\projects\\lowmem\\src\\main\\java\\graph1.xml";
 	private static final String GRAPH2 = "E:\\projects\\lowmem\\src\\main\\java\\graph2.xml";
 	private static final String HARTMAN_FULL = "E:\\projects\\lowmem\\src\\main\\java\\IVFHartmann_GS1_example_full.xml";
 	private static final String HARTMAN_SMALL = "E:\\projects\\lowmem\\src\\main\\java\\IVFHartmann_GS1_example_small.xml";
@@ -28,7 +28,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		XmlWoodStockConfig config = xmlWoodStockConfig()
-				.withFilePath(STORY_XML_FILE)
+				.withFilePath(GRAPH1)
 				.withEncoding(ENCODING)
 				.withContainingTag(CONTAINING_TAG)
 				.withUniqueIdentifierTag(UNIQUE_IDENTIFIER_TAG)

@@ -28,7 +28,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		XmlWoodStockConfig config = xmlWoodStockConfig()
-				.withFilePath(GRAPH1)
+				.withFilePath(STORY_XML_FILE)
 				.withEncoding(ENCODING)
 				.withContainingTag(CONTAINING_TAG)
 				.withUniqueIdentifierTag(UNIQUE_IDENTIFIER_TAG)
@@ -71,8 +71,7 @@ public class Main {
 //		indexer.getNodeMap().forEach((key, value) -> {
 //			CatalogNode catalogNode = indexer.getNodeMap().get(key);
 //			catalogNode.getNodeDependencies().forEach(catalogIdentifier -> {
-//				if (catalogIdentifier.getBarcode().equalsIgnoreCase("04049500255431") &&
-//						catalogIdentifier.getVendorProductNumber().equalsIgnoreCase("1698705")) {
+//				if (catalogIdentifier.getBarcode().equalsIgnoreCase("07611600968756")) {
 //					System.out.println("04049500255431 and 1698705 exists after indexing and are part of catalog node " + catalogNode.getUniqueIdentifier());
 //				}
 //			});

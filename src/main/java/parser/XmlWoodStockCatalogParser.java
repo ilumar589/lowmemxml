@@ -141,17 +141,20 @@ public class XmlWoodStockCatalogParser {
 	}
 
 	private void determinePackaging(String text) {
-		if (config.getRootTag().equalsIgnoreCase(tagStack.peek())) {
+		if (!tagStack.isEmpty() && config.getRootTag().equalsIgnoreCase(tagStack.peek())) {
 			lastReadPackaging = text;
 		}
 	}
 
 	private void setLastNode() {
-		if (lastReadBarcode != null && lastReadVendorProductNumber != null) {
+		if (lastReadBarcode != null && lastReadVendorProductNumber != null && lastReadPackaging != null) {
 			lastReadCatalogNode = catalogNodeMap.get(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging));
 
 			if (lastReadCatalogNode == null) {
-				System.out.println("No node found for barcode: " + lastReadBarcode + " and vendor product number: " + lastReadVendorProductNumber);
+				System.out.println("No node found for barcode: "
+						+ lastReadBarcode + " , vendor product number: "
+						+ lastReadVendorProductNumber + " and packaging: "
+						+ lastReadPackaging);
 			}
 		}
 	}

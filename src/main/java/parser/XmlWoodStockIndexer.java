@@ -99,7 +99,7 @@ public class XmlWoodStockIndexer {
 	private void determineRootNode() {
 		if (config.getRootTag().equalsIgnoreCase(tagStack.peek())) {
 
-			lastReadPackaging = reader.getText();
+			lastReadPackaging = reader.getText().trim();
 
 			isLatestReadNodeRoot = config.getRootTagValue().equalsIgnoreCase(lastReadPackaging);
 		}
@@ -116,7 +116,7 @@ public class XmlWoodStockIndexer {
 				config.getUniqueIdentifierContainerTag().equalsIgnoreCase(getPreviousElement(config.getUniqueIdentifierContainerTagStackDistance())) &&
 				config.getUniqueIdentifierTag().equalsIgnoreCase(tagStack.peek())) {
 
-			lastReadBarcode = reader.getText();
+			lastReadBarcode = reader.getText().trim();
 		}
 	}
 
@@ -125,9 +125,17 @@ public class XmlWoodStockIndexer {
 				config.getDependencyTag().equalsIgnoreCase(tagStack.peek())) {
 
 			//TODO figure it out
-			CatalogNode currentCatalogNode = nodeFactory.getNode(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging)).stream().findFirst().get();
+			CatalogIdentifier catalogIdentifier = new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging);
+			Optional<CatalogNode> currentCatalogNode = nodeFactory.getNode(catalogIdentifier).stream().findFirst();
+			if (!currentCatalogNode.isPresent()) {
+				try {
+					throw new Exception("Can't find node for: " + catalogIdentifier.toString());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 
-			checkCurrentNodeForVisitedDependencies(reader.getText(), currentCatalogNode);
+			checkCurrentNodeForVisitedDependencies(reader.getText().trim(), currentCatalogNode.get());
 		}
 	}
 
@@ -175,12 +183,12 @@ public class XmlWoodStockIndexer {
 			/** the vendor product number values is found before the type so it has to be stored until
 			 * we cant test that it's supplier assigned **/
 			if (config.getVendorProductNumberValueTag().equalsIgnoreCase(tagStack.peek())) {
-				tempVendorProductNumber = reader.getText();
+				tempVendorProductNumber = reader.getText().trim();
 			}
 
 			/** if we reach the vendor product number type tag and it's value is supplier assigned **/
 			if (config.getVendorProductNumberTypeTag().equalsIgnoreCase(tagStack.peek()) &&
-					config.getVendorProductNumberTypeValue().equalsIgnoreCase(reader.getText())) {
+					config.getVendorProductNumberTypeValue().equalsIgnoreCase(reader.getText().trim())) {
 				lastReadVendorProductNumber = tempVendorProductNumber;
 
 				generateNode();

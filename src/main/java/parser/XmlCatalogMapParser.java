@@ -100,21 +100,21 @@ public class XmlCatalogMapParser {
             docNode.appendChild(currentNode.getContent());
             currentNode.setContent(docNode);
 
-            XPath xPath = new XPathFactoryImpl().newXPath();
-
-            XPathExpression expression = null;
-            try {
-                expression = xPath.compile(PARSE_EXP);
-            } catch (XPathExpressionException e) {
-                e.printStackTrace();
-            }
-            try {
-                System.out.println("*** TEST XPATH ***");
-                System.out.println(expression.evaluate(currentNode.getContent(), XPathConstants.STRING).toString());
-                System.out.println("*** END TEST XPATH ***");
-            } catch (XPathExpressionException e) {
-                e.printStackTrace();
-            }
+//            XPath xPath = new XPathFactoryImpl().newXPath();
+//
+//            XPathExpression expression = null;
+//            try {
+//                expression = xPath.compile(PARSE_EXP);
+//            } catch (XPathExpressionException e) {
+//                e.printStackTrace();
+//            }
+//            try {
+//                System.out.println("*** TEST XPATH ***");
+//                System.out.println(expression.evaluate(currentNode.getContent(), XPathConstants.STRING).toString());
+//                System.out.println("*** END TEST XPATH ***");
+//            } catch (XPathExpressionException e) {
+//                e.printStackTrace();
+//            }
 
             previousNode.removeDependency(currentNode.getUniqueIdentifier());
 

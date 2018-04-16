@@ -1,8 +1,19 @@
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
+import mc.DocumentItem;
+import mc.XmlDocumentItem;
+import mc.XmlNodeToDocumentItemConverter;
 import parser.*;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import static java.util.Objects.isNull;
 import static parser.XmlWoodStockConfig.Builder.xmlWoodStockConfig;
 
 public class Main {
+
 
 	private static final String XML_FILE = "E:\\projects\\lowmem\\src\\main\\java\\CIN_04039239500025.6819.xml";
 	private static final String GRAPH1 = "E:\\projects\\lowmem\\src\\main\\java\\graph1.xml";
@@ -28,7 +39,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		XmlWoodStockConfig config = xmlWoodStockConfig()
-				.withFilePath(STORY_XML_FILE)
+				.withFilePath(HARTMAN_SMALL)
 				.withEncoding(ENCODING)
 				.withContainingTag(CONTAINING_TAG)
 				.withUniqueIdentifierTag(UNIQUE_IDENTIFIER_TAG)
@@ -80,7 +91,7 @@ public class Main {
 
 
 		XmlCatalogIterator xmlCatalogIterator = new XmlCatalogIterator(config, indexer.getNodeMap());
-
+//
 		while (xmlCatalogIterator.hasNext()) {
 			CatalogNode catalogNode = xmlCatalogIterator.next();
 			System.out.println("***** NODE CONTENT *****");
@@ -90,5 +101,28 @@ public class Main {
 		}
 
 //		indexer.getNodeMap();
+
+		// ------------------ SAME AS IN MC PROJECT -------------------
+
+//		Iterator<DocumentItem> allValues = Iterators.transform(xmlCatalogIterator, new XmlNodeToDocumentItemConverter());
+//
+//		Iterator<DocumentItem> remainingValues = removeNullValues(allValues);
+//
+//		while (remainingValues.hasNext()) {
+//			XmlDocumentItem documentItem = (XmlDocumentItem) remainingValues.next();
+//			System.out.println(NodeUtil.toString(documentItem.getXmlNode(), true, true));
+//		}
+	}
+
+	private static Iterator<DocumentItem> removeNullValues(Iterator<DocumentItem> documentItemIterator) {
+		List<DocumentItem> documentItems = new ArrayList<>();
+		documentItemIterator.forEachRemaining(documentItem -> {
+			if (!isNull(documentItem)) {
+				documentItems.add(documentItem);
+			} else {
+			}
+		});
+
+		return documentItems.iterator();
 	}
 }

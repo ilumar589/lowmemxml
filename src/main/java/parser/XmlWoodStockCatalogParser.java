@@ -131,11 +131,11 @@ public class XmlWoodStockCatalogParser {
 
 	private void handleCharacters(Characters characters) {
 
-		determinePackaging(characters.getData());
+		determinePackaging(characters.getData().trim());
 
-		determineBarcode(characters.getData());
+		determineBarcode(characters.getData().trim());
 
-		determineVendorProductNumber(characters.getData());
+		determineVendorProductNumber(characters.getData().trim());
 	}
 
 	private void determinePackaging(String text) {

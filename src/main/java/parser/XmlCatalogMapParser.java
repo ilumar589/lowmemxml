@@ -23,6 +23,10 @@ public class XmlCatalogMapParser {
 
     private Stack<CatalogIdentifier> unfinishedRoots;
 
+    private int removedFromNodeTreeCounter = 0;
+
+    private CatalogNode lastReturnedNode = null;
+
     public XmlCatalogMapParser(XmlWoodStockCatalogParser xmlWoodStockCatalogParser) {
         this.xmlWoodStockCatalogParser = xmlWoodStockCatalogParser;
 
@@ -33,8 +37,47 @@ public class XmlCatalogMapParser {
         this.unfinishedRoots = new Stack<>();
     }
 
+    // for zip files to continue from latest state
+    public XmlCatalogMapParser(XmlWoodStockCatalogParser xmlWoodStockCatalogParser, Collection<CatalogIdentifier> visitedNodes, Stack<CatalogIdentifier> unfinishedRoots) {
+        this.xmlWoodStockCatalogParser = xmlWoodStockCatalogParser;
+
+        this.catalogNodeMap = xmlWoodStockCatalogParser.getCatalogNodeMap();
+
+        if (visitedNodes != null) {
+            this.visitedNodes = visitedNodes;
+        } else {
+            this.visitedNodes = new ArrayList<>();
+        }
+
+        if (unfinishedRoots != null) {
+            this.unfinishedRoots = unfinishedRoots;
+        } else {
+            this.unfinishedRoots = new Stack<>();
+        }
+
+    }
+
     public boolean hasNext() {
-        return !catalogNodeMap.isEmpty() && xmlWoodStockCatalogParser.hasNext();
+        // condition that takes into account separate zip files that
+        // have been read but the node tree has not been cleared yet
+        // when one file was read
+        return xmlWoodStockCatalogParser.hasNext() || lastReturnedNode != null;
+    }
+
+    public boolean countersJustInitialized() {
+        return removedFromNodeTreeCounter == 0 && xmlWoodStockCatalogParser.getNrOfReadNodes() == 0;
+    }
+
+    public boolean readNodesHaveNotBeenRemoved() {
+        return removedFromNodeTreeCounter != xmlWoodStockCatalogParser.getNrOfReadNodes() || xmlWoodStockCatalogParser.hasNext();
+    }
+
+    public Collection<CatalogIdentifier> getVisitedNodes() {
+        return visitedNodes;
+    }
+
+    public Stack<CatalogIdentifier> getUnfinishedRoots() {
+        return unfinishedRoots;
     }
 
     public CatalogNode readNode() {
@@ -44,7 +87,8 @@ public class XmlCatalogMapParser {
             return catalogNode;
         }
 
-        return catalogNode.isRoot() ? parseRootDependency(catalogNode, null) : null;
+        lastReturnedNode = catalogNode.isRoot() ? parseRootDependency(catalogNode, null) : null;
+        return lastReturnedNode;
     }
 
     private CatalogNode getNode() {
@@ -69,6 +113,8 @@ public class XmlCatalogMapParser {
             unfinishedRoots.pop();
 
             catalogNodeMap.remove(catalogNode.getUniqueIdentifier(), catalogNode);
+
+            removedFromNodeTreeCounter ++;
 
             return true;
         }
@@ -118,6 +164,8 @@ public class XmlCatalogMapParser {
             previousNode.removeDependency(currentNode.getUniqueIdentifier());
 
             catalogNodeMap.remove(currentNode.getUniqueIdentifier(), currentNode);
+
+            removedFromNodeTreeCounter ++;
 
             visitedNodes.remove(currentNode.getUniqueIdentifier());
 

@@ -50,7 +50,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		XmlWoodStockConfig config = xmlWoodStockConfig()
-				.withFilePath(GRAPH1)
+				.withFilePath(HARTMAN_FULL)
 				.withEncoding(ENCODING)
 				.withContainingTag(CONTAINING_TAG)
 				.withUniqueIdentifierTag(UNIQUE_IDENTIFIER_TAG)
@@ -125,12 +125,17 @@ public class Main {
 
 		// ----- ZIP TEST -----
 //		if (zipFile != null) {
+//
+//			Collection<CatalogIdentifier> visitedNodes = null;
+//
+//			Stack<CatalogIdentifier> unfinishedRoots = null;
+//
 //			Enumeration<? extends ZipEntry> entries2 = zipFile.entries();
 //			while (entries2.hasMoreElements()) {
 //				ZipEntry entry = entries2.nextElement();
 //
 //				try {
-//					XmlCatalogIterator xmlCatalogIterator = new XmlCatalogIterator(config, indexer.getNodeMap(), zipFile.getInputStream(entry));
+//					XmlCatalogIterator xmlCatalogIterator = new XmlCatalogIterator(config, indexer.getNodeMap(), zipFile.getInputStream(entry), visitedNodes, unfinishedRoots);
 //
 //					while (xmlCatalogIterator.hasNext()) {
 //						CatalogNode catalogNode = xmlCatalogIterator.next();
@@ -139,10 +144,16 @@ public class Main {
 //							NodeUtil.toString(catalogNode.getContent(), true, true) : "Null for now");
 //						System.out.println("**** NEXT NODE *******");
 //				}
+//
+//				// preserve state for next file
+//					visitedNodes = xmlCatalogIterator.getVisitedNodes();
+//					unfinishedRoots = xmlCatalogIterator.getUnfinishedRoots();
+//
 //				} catch (IOException e) {
 //					e.printStackTrace();
 //					}
 //				}
+//
 //			}
 
 		XmlWoodStockIndexer indexer = new XmlWoodStockIndexer(config);

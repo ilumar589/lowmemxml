@@ -34,6 +34,8 @@ public class XmlWoodStockCatalogParser {
 
 	private String tempVendorProductNumber;
 
+	private int nrOfReadNodes = 0;
+
 	public XmlWoodStockCatalogParser(XmlWoodStockConfig config, Multimap<CatalogIdentifier, CatalogNode> catalogNodeMap) {
 		this.config = config;
 
@@ -79,7 +81,13 @@ public class XmlWoodStockCatalogParser {
 		}
 	}
 
-	public boolean hasNext() { return reader.hasNext(); }
+	public int getNrOfReadNodes() {
+		return nrOfReadNodes;
+	}
+
+	public boolean hasNext() {
+		return reader.hasNext();
+	}
 
 	public CatalogNode readNode() {
 		nodeFactory.readyForNextNode();
@@ -96,6 +104,7 @@ public class XmlWoodStockCatalogParser {
 				} else if (event.isEndElement() && handleEndElement(event.asEndElement())) {
 
 					lastReadCatalogNode.setContent(nodeFactory.createNode());
+					nrOfReadNodes ++;
 
 					break;
 

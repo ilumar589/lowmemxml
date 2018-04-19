@@ -1,0 +1,807 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<sh:StandardBusinessDocument xmlns:sh="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader"
+                             xmlns:eanucc="urn:ean.ucc:2" xmlns:gdsn="urn:ean.ucc:gdsn:2"
+                             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                             xsi:schemaLocation="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader Schemas/sbdh/StandardBusinessDocumentHeader.xsd urn:ean.ucc:2 Schemas/CatalogueItemNotificationProxy.xsd">
+	<sh:StandardBusinessDocumentHeader>
+		<sh:HeaderVersion>1.0</sh:HeaderVersion>
+		<sh:Sender>
+			<sh:Identifier Authority="EAN.UCC">7611600000005</sh:Identifier>
+		</sh:Sender>
+		<sh:Receiver>
+			<sh:Identifier Authority="EAN.UCC">4399901737112</sh:Identifier>
+		</sh:Receiver>
+		<sh:DocumentIdentification>
+			<sh:Standard>EAN.UCC</sh:Standard>
+			<sh:TypeVersion>2.3</sh:TypeVersion>
+			<sh:InstanceIdentifier>1</sh:InstanceIdentifier>
+			<sh:Type>CatalogueItemNotification</sh:Type>
+			<sh:MultipleType>false</sh:MultipleType>
+			<sh:CreationDateAndTime>2015-09-22T11:36:42+02:00</sh:CreationDateAndTime>
+		</sh:DocumentIdentification>
+	</sh:StandardBusinessDocumentHeader>
+	<eanucc:message>
+		<entityIdentification>
+			<uniqueCreatorIdentification>1</uniqueCreatorIdentification>
+			<contentOwner>
+				<gln>7611600000005</gln>
+			</contentOwner>
+		</entityIdentification>
+		<eanucc:transaction>
+			<entityIdentification>
+				<uniqueCreatorIdentification>1</uniqueCreatorIdentification>
+				<contentOwner>
+					<gln>7611600000005</gln>
+				</contentOwner>
+			</entityIdentification>
+			<command>
+				<eanucc:documentCommand>
+					<documentCommandHeader type="CHANGE_BY_REFRESH">
+						<entityIdentification>
+							<uniqueCreatorIdentification>1</uniqueCreatorIdentification>
+							<contentOwner>
+								<gln>7611600000005</gln>
+							</contentOwner>
+						</entityIdentification>
+					</documentCommandHeader>
+					<documentCommandOperand>
+						<gdsn:catalogueItemNotification creationDateTime="2015-09-22T11:36:42+02:00"
+						                                documentStatus="ORIGINAL" isReload="true"
+						                                xsi:schemaLocation="urn:ean.ucc:2 Schemas/CatalogueItemNotificationProxy.xsd">
+							<catalogueItem>
+								<catalogueItemState state="REGISTERED"/>
+								<tradeItem>
+									<tradeItemUnitDescriptor>BASE_UNIT_OR_EACH</tradeItemUnitDescriptor>
+									<tradeItemIdentification>
+										<gtin>07611600124190</gtin>
+										<additionalTradeItemIdentification>
+											<additionalTradeItemIdentificationValue>1241900
+											</additionalTradeItemIdentificationValue>
+											<additionalTradeItemIdentificationType>SUPPLIER_ASSIGNED
+											</additionalTradeItemIdentificationType>
+										</additionalTradeItemIdentification>
+									</tradeItemIdentification>
+									<tradeItemInformation>
+										<informationProviderOfTradeItem>
+											<informationProvider>
+												<gln>4399901737112</gln>
+											</informationProvider>
+											<nameOfInformationProvider>Medical Columbus</nameOfInformationProvider>
+										</informationProviderOfTradeItem>
+										<classificationCategoryCode>
+											<classificationCategoryCode>10005844</classificationCategoryCode>
+										</classificationCategoryCode>
+										<tradeItemDescriptionInformation>
+											<brandName>Watteprodukte</brandName>
+											<functionalName>
+												<description>
+													<language>
+														<languageISOCode>DE</languageISOCode>
+													</language>
+													<shortText>Watte - Sonstiges</shortText>
+												</description>
+												<description>
+													<language>
+														<languageISOCode>EN</languageISOCode>
+													</language>
+													<shortText>Cotton - Other</shortText>
+												</description>
+											</functionalName>
+											<tradeItemDescription>
+												<language>
+													<languageISOCode>DE</languageISOCode>
+												</language>
+												<text>Reinigungswatte 18cmx6m K20 TierspitalZH</text>
+											</tradeItemDescription>
+										</tradeItemDescriptionInformation>
+										<tradingPartnerNeutralTradeItemInformation>
+											<tradeItemUnitIndicator>
+												<isTradeItemABaseUnit>true</isTradeItemABaseUnit>
+												<isTradeItemAConsumerUnit>true</isTradeItemAConsumerUnit>
+												<isTradeItemADespatchUnit>true</isTradeItemADespatchUnit>
+												<isTradeItemAnInvoiceUnit>true</isTradeItemAnInvoiceUnit>
+												<isTradeItemAnOrderableUnit>true</isTradeItemAnOrderableUnit>
+												<isTradeItemAVariableUnit>false</isTradeItemAVariableUnit>
+											</tradeItemUnitIndicator>
+											<brandOwnerOfTradeItem>
+												<brandOwner>
+													<gln>7611600000005</gln>
+												</brandOwner>
+												<nameOfBrandOwner>IVF Hartmann</nameOfBrandOwner>
+											</brandOwnerOfTradeItem>
+											<packagingMarking>
+												<isPackagingMarkedReturnable>false</isPackagingMarkedReturnable>
+											</packagingMarking>
+											<tradeItemMarking>
+												<hasBatchNumber>false</hasBatchNumber>
+											</tradeItemMarking>
+											<tradeItemMeasurements>
+												<depth>
+													<measurementValue unitOfMeasure="CM">
+														<value>0</value>
+													</measurementValue>
+												</depth>
+												<grossWeight>
+													<measurementValue unitOfMeasure="KG">
+														<value>1.054000</value>
+													</measurementValue>
+												</grossWeight>
+												<height>
+													<measurementValue unitOfMeasure="CM">
+														<value>0</value>
+													</measurementValue>
+												</height>
+												<width>
+													<measurementValue unitOfMeasure="CM">
+														<value>0</value>
+													</measurementValue>
+												</width>
+											</tradeItemMeasurements>
+											<tradeItemOrderInformation>
+												<orderQuantityMinimum>0</orderQuantityMinimum>
+											</tradeItemOrderInformation>
+											<cataloguePrice>
+												<effectiveStartDate>2015-09-22</effectiveStartDate>
+												<tradeItemPrice>
+													<currencyCode>
+														<currencyISOCode>CHF</currencyISOCode>
+													</currencyCode>
+													<value>0.000000</value>
+												</tradeItemPrice>
+											</cataloguePrice>
+										</tradingPartnerNeutralTradeItemInformation>
+									</tradeItemInformation>
+								</tradeItem>
+							</catalogueItem>
+							<catalogueItemNotificationIdentification>
+								<uniqueCreatorIdentification>1</uniqueCreatorIdentification>
+								<contentOwner>
+									<gln>7611600000005</gln>
+								</contentOwner>
+							</catalogueItemNotificationIdentification>
+						</gdsn:catalogueItemNotification>
+						<gdsn:catalogueItemNotification creationDateTime="2015-09-22T11:36:42+02:00"
+						                                documentStatus="ORIGINAL" isReload="true"
+						                                xsi:schemaLocation="urn:ean.ucc:2 Schemas/CatalogueItemNotificationProxy.xsd">
+							<catalogueItem>
+								<catalogueItemState state="REGISTERED"/>
+								<tradeItem>
+									<tradeItemUnitDescriptor>BASE_UNIT_OR_EACH</tradeItemUnitDescriptor>
+									<tradeItemIdentification>
+										<gtin>04049500832878</gtin>
+										<additionalTradeItemIdentification>
+											<additionalTradeItemIdentificationValue>1432130
+											</additionalTradeItemIdentificationValue>
+											<additionalTradeItemIdentificationType>SUPPLIER_ASSIGNED
+											</additionalTradeItemIdentificationType>
+										</additionalTradeItemIdentification>
+										<additionalTradeItemIdentification>
+											<additionalTradeItemIdentificationValue>4790128
+											</additionalTradeItemIdentificationValue>
+											<additionalTradeItemIdentificationType>FOR_INTERNAL_USE_2
+											</additionalTradeItemIdentificationType>
+										</additionalTradeItemIdentification>
+									</tradeItemIdentification>
+									<tradeItemInformation>
+										<informationProviderOfTradeItem>
+											<informationProvider>
+												<gln>4399901737112</gln>
+											</informationProvider>
+											<nameOfInformationProvider>Medical Columbus</nameOfInformationProvider>
+										</informationProviderOfTradeItem>
+										<classificationCategoryCode>
+											<classificationCategoryCode>10005844</classificationCategoryCode>
+										</classificationCategoryCode>
+										<tradeItemDescriptionInformation>
+											<brandName>Wundbehandlung</brandName>
+											<functionalName>
+												<description>
+													<language>
+														<languageISOCode>DE</languageISOCode>
+													</language>
+													<shortText>Trad. Wundbehandlung</shortText>
+												</description>
+												<description>
+													<language>
+														<languageISOCode>EN</languageISOCode>
+													</language>
+													<shortText>Trad. Wound Dressing</shortText>
+												</description>
+											</functionalName>
+											<tradeItemDescription>
+												<language>
+													<languageISOCode>DE</languageISOCode>
+												</language>
+												<text>Pur-Zellin ust 4x5cm 11f P1x500</text>
+											</tradeItemDescription>
+										</tradeItemDescriptionInformation>
+										<tradingPartnerNeutralTradeItemInformation>
+											<tradeItemUnitIndicator>
+												<isTradeItemABaseUnit>true</isTradeItemABaseUnit>
+												<isTradeItemAConsumerUnit>true</isTradeItemAConsumerUnit>
+												<isTradeItemADespatchUnit>true</isTradeItemADespatchUnit>
+												<isTradeItemAnInvoiceUnit>true</isTradeItemAnInvoiceUnit>
+												<isTradeItemAnOrderableUnit>true</isTradeItemAnOrderableUnit>
+												<isTradeItemAVariableUnit>false</isTradeItemAVariableUnit>
+											</tradeItemUnitIndicator>
+											<brandOwnerOfTradeItem>
+												<brandOwner>
+													<gln>7611600000005</gln>
+												</brandOwner>
+												<nameOfBrandOwner>IVF Hartmann</nameOfBrandOwner>
+											</brandOwnerOfTradeItem>
+											<packagingMarking>
+												<isPackagingMarkedReturnable>false</isPackagingMarkedReturnable>
+											</packagingMarking>
+											<tradeItemMarking>
+												<hasBatchNumber>false</hasBatchNumber>
+											</tradeItemMarking>
+											<tradeItemMeasurements>
+												<depth>
+													<measurementValue unitOfMeasure="CM">
+														<value>0</value>
+													</measurementValue>
+												</depth>
+												<grossWeight>
+													<measurementValue unitOfMeasure="KG">
+														<value>0.250000</value>
+													</measurementValue>
+												</grossWeight>
+												<height>
+													<measurementValue unitOfMeasure="CM">
+														<value>0</value>
+													</measurementValue>
+												</height>
+												<width>
+													<measurementValue unitOfMeasure="CM">
+														<value>0</value>
+													</measurementValue>
+												</width>
+											</tradeItemMeasurements>
+											<tradeItemOrderInformation>
+												<orderQuantityMinimum>0</orderQuantityMinimum>
+											</tradeItemOrderInformation>
+											<cataloguePrice>
+												<effectiveStartDate>2015-09-22</effectiveStartDate>
+												<tradeItemPrice>
+													<currencyCode>
+														<currencyISOCode>CHF</currencyISOCode>
+													</currencyCode>
+													<value>325.000000</value>
+												</tradeItemPrice>
+											</cataloguePrice>
+										</tradingPartnerNeutralTradeItemInformation>
+									</tradeItemInformation>
+								</tradeItem>
+							</catalogueItem>
+							<catalogueItemNotificationIdentification>
+								<uniqueCreatorIdentification>1</uniqueCreatorIdentification>
+								<contentOwner>
+									<gln>7611600000005</gln>
+								</contentOwner>
+							</catalogueItemNotificationIdentification>
+						</gdsn:catalogueItemNotification>
+						<gdsn:catalogueItemNotification creationDateTime="2015-09-22T11:36:42+02:00"
+						                                documentStatus="ORIGINAL" isReload="true"
+						                                xsi:schemaLocation="urn:ean.ucc:2 Schemas/CatalogueItemNotificationProxy.xsd">
+							<catalogueItem>
+								<catalogueItemState state="REGISTERED"/>
+								<tradeItem>
+									<tradeItemUnitDescriptor>CASE</tradeItemUnitDescriptor>
+									<tradeItemIdentification>
+										<gtin>04049500832885</gtin>
+										<additionalTradeItemIdentification>
+											<additionalTradeItemIdentificationValue>1432130
+											</additionalTradeItemIdentificationValue>
+											<additionalTradeItemIdentificationType>SUPPLIER_ASSIGNED
+											</additionalTradeItemIdentificationType>
+										</additionalTradeItemIdentification>
+										<additionalTradeItemIdentification>
+											<additionalTradeItemIdentificationValue>4790128
+											</additionalTradeItemIdentificationValue>
+											<additionalTradeItemIdentificationType>FOR_INTERNAL_USE_2
+											</additionalTradeItemIdentificationType>
+										</additionalTradeItemIdentification>
+									</tradeItemIdentification>
+									<nextLowerLevelTradeItemInformation>
+										<quantityOfChildren>1</quantityOfChildren>
+										<totalQuantityOfNextLowerLevelTradeItem>16
+										</totalQuantityOfNextLowerLevelTradeItem>
+										<childTradeItem>
+											<quantityofNextLowerLevelTradeItem>16</quantityofNextLowerLevelTradeItem>
+											<tradeItemIdentification>
+												<gtin>04049500832878</gtin>
+											</tradeItemIdentification>
+										</childTradeItem>
+									</nextLowerLevelTradeItemInformation>
+									<tradeItemInformation>
+										<informationProviderOfTradeItem>
+											<informationProvider>
+												<gln>4399901737112</gln>
+											</informationProvider>
+											<nameOfInformationProvider>Medical Columbus</nameOfInformationProvider>
+										</informationProviderOfTradeItem>
+										<classificationCategoryCode>
+											<classificationCategoryCode>10005844</classificationCategoryCode>
+										</classificationCategoryCode>
+										<tradeItemDescriptionInformation>
+											<brandName>Wundbehandlung</brandName>
+											<functionalName>
+												<description>
+													<language>
+														<languageISOCode>DE</languageISOCode>
+													</language>
+													<shortText>Trad. Wundbehandlung</shortText>
+												</description>
+												<description>
+													<language>
+														<languageISOCode>EN</languageISOCode>
+													</language>
+													<shortText>Trad. Wound Dressing</shortText>
+												</description>
+											</functionalName>
+											<tradeItemDescription>
+												<language>
+													<languageISOCode>DE</languageISOCode>
+												</language>
+												<text>Pur-Zellin ust 4x5cm 11f P1x500</text>
+											</tradeItemDescription>
+										</tradeItemDescriptionInformation>
+										<tradingPartnerNeutralTradeItemInformation>
+											<tradeItemUnitIndicator>
+												<isTradeItemABaseUnit>false</isTradeItemABaseUnit>
+												<isTradeItemAConsumerUnit>true</isTradeItemAConsumerUnit>
+												<isTradeItemADespatchUnit>true</isTradeItemADespatchUnit>
+												<isTradeItemAnInvoiceUnit>true</isTradeItemAnInvoiceUnit>
+												<isTradeItemAnOrderableUnit>true</isTradeItemAnOrderableUnit>
+												<isTradeItemAVariableUnit>false</isTradeItemAVariableUnit>
+											</tradeItemUnitIndicator>
+											<brandOwnerOfTradeItem>
+												<brandOwner>
+													<gln>7611600000005</gln>
+												</brandOwner>
+												<nameOfBrandOwner>IVF Hartmann</nameOfBrandOwner>
+											</brandOwnerOfTradeItem>
+											<packagingMarking>
+												<isPackagingMarkedReturnable>false</isPackagingMarkedReturnable>
+											</packagingMarking>
+											<tradeItemMarking>
+												<hasBatchNumber>false</hasBatchNumber>
+											</tradeItemMarking>
+											<tradeItemMeasurements>
+												<depth>
+													<measurementValue unitOfMeasure="CM">
+														<value>0</value>
+													</measurementValue>
+												</depth>
+												<grossWeight>
+													<measurementValue unitOfMeasure="KG">
+														<value>0.250000</value>
+													</measurementValue>
+												</grossWeight>
+												<height>
+													<measurementValue unitOfMeasure="CM">
+														<value>0</value>
+													</measurementValue>
+												</height>
+												<width>
+													<measurementValue unitOfMeasure="CM">
+														<value>0</value>
+													</measurementValue>
+												</width>
+											</tradeItemMeasurements>
+											<tradeItemOrderInformation>
+												<orderQuantityMinimum>0</orderQuantityMinimum>
+											</tradeItemOrderInformation>
+											<cataloguePrice>
+												<effectiveStartDate>2015-09-22</effectiveStartDate>
+												<tradeItemPrice>
+													<currencyCode>
+														<currencyISOCode>CHF</currencyISOCode>
+													</currencyCode>
+													<value>325.000000</value>
+												</tradeItemPrice>
+											</cataloguePrice>
+										</tradingPartnerNeutralTradeItemInformation>
+									</tradeItemInformation>
+								</tradeItem>
+							</catalogueItem>
+							<catalogueItemNotificationIdentification>
+								<uniqueCreatorIdentification>1</uniqueCreatorIdentification>
+								<contentOwner>
+									<gln>7611600000005</gln>
+								</contentOwner>
+							</catalogueItemNotificationIdentification>
+						</gdsn:catalogueItemNotification>
+						<gdsn:catalogueItemNotification creationDateTime="2015-09-22T11:36:42+02:00"
+						                                documentStatus="ORIGINAL" isReload="true"
+						                                xsi:schemaLocation="urn:ean.ucc:2 Schemas/CatalogueItemNotificationProxy.xsd">
+							<catalogueItem>
+								<catalogueItemState state="REGISTERED"/>
+								<tradeItem>
+									<tradeItemUnitDescriptor>PALLET</tradeItemUnitDescriptor>
+									<tradeItemIdentification>
+										<gtin>04049500859127</gtin>
+										<additionalTradeItemIdentification>
+											<additionalTradeItemIdentificationValue>1432130
+											</additionalTradeItemIdentificationValue>
+											<additionalTradeItemIdentificationType>SUPPLIER_ASSIGNED
+											</additionalTradeItemIdentificationType>
+										</additionalTradeItemIdentification>
+										<additionalTradeItemIdentification>
+											<additionalTradeItemIdentificationValue>4790128
+											</additionalTradeItemIdentificationValue>
+											<additionalTradeItemIdentificationType>FOR_INTERNAL_USE_2
+											</additionalTradeItemIdentificationType>
+										</additionalTradeItemIdentification>
+									</tradeItemIdentification>
+									<nextLowerLevelTradeItemInformation>
+										<quantityOfChildren>1</quantityOfChildren>
+										<totalQuantityOfNextLowerLevelTradeItem>480
+										</totalQuantityOfNextLowerLevelTradeItem>
+										<childTradeItem>
+											<quantityofNextLowerLevelTradeItem>480</quantityofNextLowerLevelTradeItem>
+											<tradeItemIdentification>
+												<gtin>04049500832878</gtin>
+											</tradeItemIdentification>
+										</childTradeItem>
+									</nextLowerLevelTradeItemInformation>
+									<tradeItemInformation>
+										<informationProviderOfTradeItem>
+											<informationProvider>
+												<gln>4399901737112</gln>
+											</informationProvider>
+											<nameOfInformationProvider>Medical Columbus</nameOfInformationProvider>
+										</informationProviderOfTradeItem>
+										<classificationCategoryCode>
+											<classificationCategoryCode>10005844</classificationCategoryCode>
+										</classificationCategoryCode>
+										<tradeItemDescriptionInformation>
+											<brandName>Wundbehandlung</brandName>
+											<functionalName>
+												<description>
+													<language>
+														<languageISOCode>DE</languageISOCode>
+													</language>
+													<shortText>Trad. Wundbehandlung</shortText>
+												</description>
+												<description>
+													<language>
+														<languageISOCode>EN</languageISOCode>
+													</language>
+													<shortText>Trad. Wound Dressing</shortText>
+												</description>
+											</functionalName>
+											<tradeItemDescription>
+												<language>
+													<languageISOCode>DE</languageISOCode>
+												</language>
+												<text>Pur-Zellin ust 4x5cm 11f P1x500</text>
+											</tradeItemDescription>
+										</tradeItemDescriptionInformation>
+										<tradingPartnerNeutralTradeItemInformation>
+											<tradeItemUnitIndicator>
+												<isTradeItemABaseUnit>false</isTradeItemABaseUnit>
+												<isTradeItemAConsumerUnit>true</isTradeItemAConsumerUnit>
+												<isTradeItemADespatchUnit>true</isTradeItemADespatchUnit>
+												<isTradeItemAnInvoiceUnit>true</isTradeItemAnInvoiceUnit>
+												<isTradeItemAnOrderableUnit>true</isTradeItemAnOrderableUnit>
+												<isTradeItemAVariableUnit>false</isTradeItemAVariableUnit>
+											</tradeItemUnitIndicator>
+											<brandOwnerOfTradeItem>
+												<brandOwner>
+													<gln>7611600000005</gln>
+												</brandOwner>
+												<nameOfBrandOwner>IVF Hartmann</nameOfBrandOwner>
+											</brandOwnerOfTradeItem>
+											<packagingMarking>
+												<isPackagingMarkedReturnable>false</isPackagingMarkedReturnable>
+											</packagingMarking>
+											<tradeItemMarking>
+												<hasBatchNumber>false</hasBatchNumber>
+											</tradeItemMarking>
+											<tradeItemMeasurements>
+												<depth>
+													<measurementValue unitOfMeasure="CM">
+														<value>0</value>
+													</measurementValue>
+												</depth>
+												<grossWeight>
+													<measurementValue unitOfMeasure="KG">
+														<value>0.250000</value>
+													</measurementValue>
+												</grossWeight>
+												<height>
+													<measurementValue unitOfMeasure="CM">
+														<value>0</value>
+													</measurementValue>
+												</height>
+												<width>
+													<measurementValue unitOfMeasure="CM">
+														<value>0</value>
+													</measurementValue>
+												</width>
+											</tradeItemMeasurements>
+											<tradeItemOrderInformation>
+												<orderQuantityMinimum>0</orderQuantityMinimum>
+											</tradeItemOrderInformation>
+											<cataloguePrice>
+												<effectiveStartDate>2015-09-22</effectiveStartDate>
+												<tradeItemPrice>
+													<currencyCode>
+														<currencyISOCode>CHF</currencyISOCode>
+													</currencyCode>
+													<value>325.000000</value>
+												</tradeItemPrice>
+											</cataloguePrice>
+										</tradingPartnerNeutralTradeItemInformation>
+									</tradeItemInformation>
+								</tradeItem>
+							</catalogueItem>
+							<catalogueItemNotificationIdentification>
+								<uniqueCreatorIdentification>1</uniqueCreatorIdentification>
+								<contentOwner>
+									<gln>7611600000005</gln>
+								</contentOwner>
+							</catalogueItemNotificationIdentification>
+						</gdsn:catalogueItemNotification>
+						<gdsn:catalogueItemNotification creationDateTime="2015-09-22T11:36:42+02:00"
+						                                documentStatus="ORIGINAL" isReload="true"
+						                                xsi:schemaLocation="urn:ean.ucc:2 Schemas/CatalogueItemNotificationProxy.xsd">
+							<catalogueItem>
+								<catalogueItemState state="REGISTERED"/>
+								<tradeItem>
+									<tradeItemUnitDescriptor>BASE_UNIT_OR_EACH</tradeItemUnitDescriptor>
+									<tradeItemIdentification>
+										<gtin>04049500215909</gtin>
+										<additionalTradeItemIdentification>
+											<additionalTradeItemIdentificationValue>1486201
+											</additionalTradeItemIdentificationValue>
+											<additionalTradeItemIdentificationType>SUPPLIER_ASSIGNED
+											</additionalTradeItemIdentificationType>
+										</additionalTradeItemIdentification>
+										<additionalTradeItemIdentification>
+											<additionalTradeItemIdentificationValue>3607375
+											</additionalTradeItemIdentificationValue>
+											<additionalTradeItemIdentificationType>FOR_INTERNAL_USE_2
+											</additionalTradeItemIdentificationType>
+										</additionalTradeItemIdentification>
+									</tradeItemIdentification>
+									<tradeItemInformation>
+										<informationProviderOfTradeItem>
+											<informationProvider>
+												<gln>4399901737112</gln>
+											</informationProvider>
+											<nameOfInformationProvider>Medical Columbus</nameOfInformationProvider>
+										</informationProviderOfTradeItem>
+										<classificationCategoryCode>
+											<classificationCategoryCode>10005844</classificationCategoryCode>
+										</classificationCategoryCode>
+										<tradeItemDescriptionInformation>
+											<brandName>Babyhygiene</brandName>
+											<functionalName>
+												<description>
+													<language>
+														<languageISOCode>DE</languageISOCode>
+													</language>
+													<shortText>Saugki./Flockenwin.</shortText>
+												</description>
+												<description>
+													<language>
+														<languageISOCode>EN</languageISOCode>
+													</language>
+													<shortText>Abs.Pads/Fluff Diap.</shortText>
+												</description>
+											</functionalName>
+											<tradeItemDescription>
+												<language>
+													<languageISOCode>DE</languageISOCode>
+												</language>
+												<text>Strampelp FloWi Saugstaerke2 P56 K4</text>
+											</tradeItemDescription>
+										</tradeItemDescriptionInformation>
+										<tradingPartnerNeutralTradeItemInformation>
+											<tradeItemUnitIndicator>
+												<isTradeItemABaseUnit>true</isTradeItemABaseUnit>
+												<isTradeItemAConsumerUnit>true</isTradeItemAConsumerUnit>
+												<isTradeItemADespatchUnit>true</isTradeItemADespatchUnit>
+												<isTradeItemAnInvoiceUnit>true</isTradeItemAnInvoiceUnit>
+												<isTradeItemAnOrderableUnit>true</isTradeItemAnOrderableUnit>
+												<isTradeItemAVariableUnit>false</isTradeItemAVariableUnit>
+											</tradeItemUnitIndicator>
+											<brandOwnerOfTradeItem>
+												<brandOwner>
+													<gln>7611600000005</gln>
+												</brandOwner>
+												<nameOfBrandOwner>IVF Hartmann</nameOfBrandOwner>
+											</brandOwnerOfTradeItem>
+											<packagingMarking>
+												<isPackagingMarkedReturnable>false</isPackagingMarkedReturnable>
+											</packagingMarking>
+											<tradeItemMarking>
+												<hasBatchNumber>false</hasBatchNumber>
+											</tradeItemMarking>
+											<tradeItemMeasurements>
+												<depth>
+													<measurementValue unitOfMeasure="CM">
+														<value>0</value>
+													</measurementValue>
+												</depth>
+												<grossWeight>
+													<measurementValue unitOfMeasure="KG">
+														<value>1.413000</value>
+													</measurementValue>
+												</grossWeight>
+												<height>
+													<measurementValue unitOfMeasure="CM">
+														<value>0</value>
+													</measurementValue>
+												</height>
+												<width>
+													<measurementValue unitOfMeasure="CM">
+														<value>0</value>
+													</measurementValue>
+												</width>
+											</tradeItemMeasurements>
+											<tradeItemOrderInformation>
+												<orderQuantityMinimum>0</orderQuantityMinimum>
+											</tradeItemOrderInformation>
+											<cataloguePrice>
+												<effectiveStartDate>2015-09-22</effectiveStartDate>
+												<tradeItemPrice>
+													<currencyCode>
+														<currencyISOCode>CHF</currencyISOCode>
+													</currencyCode>
+													<value>1100.000000</value>
+												</tradeItemPrice>
+											</cataloguePrice>
+										</tradingPartnerNeutralTradeItemInformation>
+									</tradeItemInformation>
+								</tradeItem>
+							</catalogueItem>
+							<catalogueItemNotificationIdentification>
+								<uniqueCreatorIdentification>1</uniqueCreatorIdentification>
+								<contentOwner>
+									<gln>7611600000005</gln>
+								</contentOwner>
+							</catalogueItemNotificationIdentification>
+						</gdsn:catalogueItemNotification>
+						<gdsn:catalogueItemNotification creationDateTime="2015-09-22T11:36:42+02:00"
+						                                documentStatus="ORIGINAL" isReload="true"
+						                                xsi:schemaLocation="urn:ean.ucc:2 Schemas/CatalogueItemNotificationProxy.xsd">
+							<catalogueItem>
+								<catalogueItemState state="REGISTERED"/>
+								<tradeItem>
+									<tradeItemUnitDescriptor>CASE</tradeItemUnitDescriptor>
+									<tradeItemIdentification>
+										<gtin>04049500977494</gtin>
+										<additionalTradeItemIdentification>
+											<additionalTradeItemIdentificationValue>1486201
+											</additionalTradeItemIdentificationValue>
+											<additionalTradeItemIdentificationType>SUPPLIER_ASSIGNED
+											</additionalTradeItemIdentificationType>
+										</additionalTradeItemIdentification>
+										<additionalTradeItemIdentification>
+											<additionalTradeItemIdentificationValue>3607375
+											</additionalTradeItemIdentificationValue>
+											<additionalTradeItemIdentificationType>FOR_INTERNAL_USE_2
+											</additionalTradeItemIdentificationType>
+										</additionalTradeItemIdentification>
+									</tradeItemIdentification>
+									<nextLowerLevelTradeItemInformation>
+										<quantityOfChildren>1</quantityOfChildren>
+										<totalQuantityOfNextLowerLevelTradeItem>56
+										</totalQuantityOfNextLowerLevelTradeItem>
+										<childTradeItem>
+											<quantityofNextLowerLevelTradeItem>56</quantityofNextLowerLevelTradeItem>
+											<tradeItemIdentification>
+												<gtin>04049500215909</gtin>
+											</tradeItemIdentification>
+										</childTradeItem>
+									</nextLowerLevelTradeItemInformation>
+									<tradeItemInformation>
+										<informationProviderOfTradeItem>
+											<informationProvider>
+												<gln>4399901737112</gln>
+											</informationProvider>
+											<nameOfInformationProvider>Medical Columbus</nameOfInformationProvider>
+										</informationProviderOfTradeItem>
+										<classificationCategoryCode>
+											<classificationCategoryCode>10005844</classificationCategoryCode>
+										</classificationCategoryCode>
+										<tradeItemDescriptionInformation>
+											<brandName>Babyhygiene</brandName>
+											<functionalName>
+												<description>
+													<language>
+														<languageISOCode>DE</languageISOCode>
+													</language>
+													<shortText>Saugki./Flockenwin.</shortText>
+												</description>
+												<description>
+													<language>
+														<languageISOCode>EN</languageISOCode>
+													</language>
+													<shortText>Abs.Pads/Fluff Diap.</shortText>
+												</description>
+											</functionalName>
+											<tradeItemDescription>
+												<language>
+													<languageISOCode>DE</languageISOCode>
+												</language>
+												<text>Strampelp FloWi Saugstaerke2 P56 K4</text>
+											</tradeItemDescription>
+										</tradeItemDescriptionInformation>
+										<tradingPartnerNeutralTradeItemInformation>
+											<tradeItemUnitIndicator>
+												<isTradeItemABaseUnit>false</isTradeItemABaseUnit>
+												<isTradeItemAConsumerUnit>true</isTradeItemAConsumerUnit>
+												<isTradeItemADespatchUnit>true</isTradeItemADespatchUnit>
+												<isTradeItemAnInvoiceUnit>true</isTradeItemAnInvoiceUnit>
+												<isTradeItemAnOrderableUnit>true</isTradeItemAnOrderableUnit>
+												<isTradeItemAVariableUnit>false</isTradeItemAVariableUnit>
+											</tradeItemUnitIndicator>
+											<brandOwnerOfTradeItem>
+												<brandOwner>
+													<gln>7611600000005</gln>
+												</brandOwner>
+												<nameOfBrandOwner>IVF Hartmann</nameOfBrandOwner>
+											</brandOwnerOfTradeItem>
+											<packagingMarking>
+												<isPackagingMarkedReturnable>false</isPackagingMarkedReturnable>
+											</packagingMarking>
+											<tradeItemMarking>
+												<hasBatchNumber>false</hasBatchNumber>
+											</tradeItemMarking>
+											<tradeItemMeasurements>
+												<depth>
+													<measurementValue unitOfMeasure="CM">
+														<value>0</value>
+													</measurementValue>
+												</depth>
+												<grossWeight>
+													<measurementValue unitOfMeasure="KG">
+														<value>1.413000</value>
+													</measurementValue>
+												</grossWeight>
+												<height>
+													<measurementValue unitOfMeasure="CM">
+														<value>0</value>
+													</measurementValue>
+												</height>
+												<width>
+													<measurementValue unitOfMeasure="CM">
+														<value>0</value>
+													</measurementValue>
+												</width>
+											</tradeItemMeasurements>
+											<tradeItemOrderInformation>
+												<orderQuantityMinimum>0</orderQuantityMinimum>
+											</tradeItemOrderInformation>
+											<cataloguePrice>
+												<effectiveStartDate>2015-09-22</effectiveStartDate>
+												<tradeItemPrice>
+													<currencyCode>
+														<currencyISOCode>CHF</currencyISOCode>
+													</currencyCode>
+													<value>1100.000000</value>
+												</tradeItemPrice>
+											</cataloguePrice>
+										</tradingPartnerNeutralTradeItemInformation>
+									</tradeItemInformation>
+								</tradeItem>
+							</catalogueItem>
+							<catalogueItemNotificationIdentification>
+								<uniqueCreatorIdentification>1</uniqueCreatorIdentification>
+								<contentOwner>
+									<gln>7611600000005</gln>
+								</contentOwner>
+							</catalogueItemNotificationIdentification>
+						</gdsn:catalogueItemNotification>
+					</documentCommandOperand>
+				</eanucc:documentCommand>
+			</command>
+		</eanucc:transaction>
+	</eanucc:message>
+</sh:StandardBusinessDocument>

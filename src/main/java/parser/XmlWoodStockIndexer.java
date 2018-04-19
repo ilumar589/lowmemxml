@@ -54,6 +54,22 @@ public class XmlWoodStockIndexer {
 		}
 	}
 
+	public XmlWoodStockIndexer(XmlWoodStockConfig config, InputStream inputStream) {
+		this.config = config;
+		this.tagStack = new Stack<>();
+		this.nodeFactory = new NodeFactory();
+		this.unfinishedDependencies = ArrayListMultimap.create();
+		this.visitedNodes = ArrayListMultimap.create();
+
+		XMLInputFactory factory =  XMLInputFactory.newInstance();
+
+		try {
+			this.reader = factory.createXMLStreamReader(new BufferedReader(new InputStreamReader(inputStream, config.getEncoding())));
+		} catch (XMLStreamException | UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void index() {
 		int eventType;
 		try {

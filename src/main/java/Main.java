@@ -5,9 +5,12 @@ import mc.XmlDocumentItem;
 import mc.XmlNodeToDocumentItemConverter;
 import parser.*;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.SequenceInputStream;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import static java.util.Objects.isNull;
 import static parser.XmlWoodStockConfig.Builder.xmlWoodStockConfig;
@@ -22,6 +25,14 @@ public class Main {
 	private static final String HARTMAN_SMALL = "E:\\projects\\lowmem\\src\\main\\java\\IVFHartmann_GS1_example_small.xml";
 
 	private static final String STORY_XML_FILE = "C:\\Users\\eduard.parvu\\Desktop\\160222_Original_Artikelkatalog_IVF_Hartmann_AG_CH_CorByThzAndDch.xml";
+
+	private static final String BIG_XML = "E:\\projects\\lowmem\\src\\main\\java\\171130_Original_Artikelkatalog_Lohman_A.xml";
+
+	private static final String ZIP_1 = "E:\\projects\\lowmem\\src\\main\\java\\IVFHartmann_GS1_example_small_chunk1.xml";
+	private static final String ZIP_2 = "E:\\projects\\lowmem\\src\\main\\java\\IVFHartmann_GS1_example_small_chunk2.xml";
+	private static final String COMBINED_ZIP = "E:\\projects\\lowmem\\src\\main\\java\\combined_zip.xml";
+
+	private static final String HARTMAN_ZIP = "E:\\projects\\lowmem\\src\\main\\java\\IVFHartmann_GS1_example_small_split.zip";
 
 	private static final String ENCODING = "UTF8";
 	private static final String CONTAINING_TAG = "catalogueItemNotification";
@@ -39,7 +50,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		XmlWoodStockConfig config = xmlWoodStockConfig()
-				.withFilePath(HARTMAN_SMALL)
+				.withFilePath(GRAPH1)
 				.withEncoding(ENCODING)
 				.withContainingTag(CONTAINING_TAG)
 				.withUniqueIdentifierTag(UNIQUE_IDENTIFIER_TAG)
@@ -56,9 +67,32 @@ public class Main {
 				.withVendorProductNumberTypeValue(VPN_TYPE_VALUE)
 				.build();
 
-		XmlWoodStockIndexer indexer = new XmlWoodStockIndexer(config);
-
-		indexer.index();
+		// ----- ZIP TEST -----
+//		ZipFile zipFile = null;
+//		try {
+//			zipFile = new ZipFile(HARTMAN_ZIP);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//
+//		Vector<InputStream> wholeZip = new Vector<>();
+//
+//		if (zipFile != null) {
+//			Enumeration<? extends ZipEntry> entries = zipFile.entries();
+//			while (entries.hasMoreElements()) {
+//				ZipEntry zipEntry = entries.nextElement();
+//				try {
+//					wholeZip.add(zipFile.getInputStream(zipEntry));
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		}
+//
+//
+//		XmlWoodStockIndexer indexer = new XmlWoodStockIndexer(config, new SequenceInputStream(wholeZip.elements()));
+//
+//		indexer.index();
 
 //		indexer.getNodeMap().forEach((key, value) -> {
 //			CatalogNode catalogNode = indexer.getNodeMap().get(key);
@@ -89,9 +123,34 @@ public class Main {
 //			});
 //		});
 
+		// ----- ZIP TEST -----
+//		if (zipFile != null) {
+//			Enumeration<? extends ZipEntry> entries2 = zipFile.entries();
+//			while (entries2.hasMoreElements()) {
+//				ZipEntry entry = entries2.nextElement();
+//
+//				try {
+//					XmlCatalogIterator xmlCatalogIterator = new XmlCatalogIterator(config, indexer.getNodeMap(), zipFile.getInputStream(entry));
+//
+//					while (xmlCatalogIterator.hasNext()) {
+//						CatalogNode catalogNode = xmlCatalogIterator.next();
+//						System.out.println("***** NODE CONTENT *****");
+//						System.out.println(catalogNode != null && catalogNode.getContent() != null ?
+//							NodeUtil.toString(catalogNode.getContent(), true, true) : "Null for now");
+//						System.out.println("**** NEXT NODE *******");
+//				}
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//					}
+//				}
+//			}
+
+		XmlWoodStockIndexer indexer = new XmlWoodStockIndexer(config);
+
+		indexer.index();
 
 		XmlCatalogIterator xmlCatalogIterator = new XmlCatalogIterator(config, indexer.getNodeMap());
-//
+
 		while (xmlCatalogIterator.hasNext()) {
 			CatalogNode catalogNode = xmlCatalogIterator.next();
 			System.out.println("***** NODE CONTENT *****");

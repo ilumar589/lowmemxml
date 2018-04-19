@@ -56,6 +56,31 @@ public class XmlWoodStockCatalogParser {
 		}
 	}
 
+
+	public XmlWoodStockCatalogParser(XmlWoodStockConfig config, Multimap<CatalogIdentifier, CatalogNode> catalogNodeMap, InputStream inputStream) {
+		this.config = config;
+
+		this.catalogNodeMap = catalogNodeMap;
+
+		try {
+			this.nodeFactory = new NodeFactory(config.getEncoding());
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		}
+
+		this.tagStack = new Stack<>();
+
+		XMLInputFactory factory = XMLInputFactory.newInstance();
+
+		try {
+			this.reader = factory.createXMLEventReader(new BufferedReader(new InputStreamReader(inputStream, config.getEncoding())));
+		} catch (XMLStreamException | UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public boolean hasNext() { return reader.hasNext(); }
+
 	public CatalogNode readNode() {
 		nodeFactory.readyForNextNode();
 		boolean insideMatchingNode = false;

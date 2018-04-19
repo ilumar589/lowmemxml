@@ -34,9 +34,8 @@ public class XmlCatalogMapParser {
     }
 
     public boolean hasNext() {
-        return !catalogNodeMap.isEmpty();
+        return !catalogNodeMap.isEmpty() && xmlWoodStockCatalogParser.hasNext();
     }
-
 
     public CatalogNode readNode() {
         CatalogNode catalogNode = getNode();

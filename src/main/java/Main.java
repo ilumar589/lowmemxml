@@ -1,5 +1,7 @@
 import com.google.common.base.Function;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Multimap;
 import mc.DocumentItem;
 import mc.XmlDocumentItem;
 import mc.XmlNodeToDocumentItemConverter;
@@ -68,31 +70,43 @@ public class Main {
 				.build();
 
 		// ----- ZIP TEST -----
-//		ZipFile zipFile = null;
+		ZipFile zipFile = null;
+		try {
+			zipFile = new ZipFile(HARTMAN_ZIP);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		Vector<Multimap<CatalogIdentifier, CatalogNode>> wholeZipIndex = new Vector<>();
+
+		if (zipFile != null) {
+			Enumeration<? extends ZipEntry> entries = zipFile.entries();
+			while (entries.hasMoreElements()) {
+				ZipEntry zipEntry = entries.nextElement();
+				try {
+					XmlWoodStockIndexer indexer = new XmlWoodStockIndexer(config, zipFile.getInputStream(zipEntry));
+
+					indexer.index();
+					wholeZipIndex.add(indexer.getNodeMap());
+
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		Multimap<CatalogIdentifier, CatalogNode> completeIndex = combine(wholeZipIndex);
+
+//		int oneByte;
 //		try {
-//			zipFile = new ZipFile(HARTMAN_ZIP);
+//			while ((oneByte = sequenceInputStream.read()) != -1) {
+//				System.out.write(oneByte);
+//			}
 //		} catch (IOException e) {
 //			e.printStackTrace();
 //		}
-//
-//		Vector<InputStream> wholeZip = new Vector<>();
-//
-//		if (zipFile != null) {
-//			Enumeration<? extends ZipEntry> entries = zipFile.entries();
-//			while (entries.hasMoreElements()) {
-//				ZipEntry zipEntry = entries.nextElement();
-//				try {
-//					wholeZip.add(zipFile.getInputStream(zipEntry));
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		}
-//
-//
-//		XmlWoodStockIndexer indexer = new XmlWoodStockIndexer(config, new SequenceInputStream(wholeZip.elements()));
-//
-//		indexer.index();
+//		System.out.flush();
+
 
 //		indexer.getNodeMap().forEach((key, value) -> {
 //			CatalogNode catalogNode = indexer.getNodeMap().get(key);
@@ -124,51 +138,57 @@ public class Main {
 //		});
 
 		// ----- ZIP TEST -----
-//		if (zipFile != null) {
-//
-//			Collection<CatalogIdentifier> visitedNodes = null;
-//
-//			Stack<CatalogIdentifier> unfinishedRoots = null;
-//
-//			Enumeration<? extends ZipEntry> entries2 = zipFile.entries();
-//			while (entries2.hasMoreElements()) {
-//				ZipEntry entry = entries2.nextElement();
-//
-//				try {
-//					XmlCatalogIterator xmlCatalogIterator = new XmlCatalogIterator(config, indexer.getNodeMap(), zipFile.getInputStream(entry), visitedNodes, unfinishedRoots);
-//
-//					while (xmlCatalogIterator.hasNext()) {
-//						CatalogNode catalogNode = xmlCatalogIterator.next();
-//						System.out.println("***** NODE CONTENT *****");
-//						System.out.println(catalogNode != null && catalogNode.getContent() != null ?
-//							NodeUtil.toString(catalogNode.getContent(), true, true) : "Null for now");
-//						System.out.println("**** NEXT NODE *******");
-//				}
-//
-//				// preserve state for next file
-//					visitedNodes = xmlCatalogIterator.getVisitedNodes();
-//					unfinishedRoots = xmlCatalogIterator.getUnfinishedRoots();
-//
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//					}
-//				}
-//
-//			}
+		if (zipFile != null) {
 
-		XmlWoodStockIndexer indexer = new XmlWoodStockIndexer(config);
+			Collection<CatalogIdentifier> visitedNodes = null;
 
-		indexer.index();
+			Stack<CatalogIdentifier> unfinishedRoots = null;
 
-		XmlCatalogIterator xmlCatalogIterator = new XmlCatalogIterator(config, indexer.getNodeMap());
+			Enumeration<? extends ZipEntry> entries2 = zipFile.entries();
+			while (entries2.hasMoreElements()) {
+				ZipEntry entry = entries2.nextElement();
 
-		while (xmlCatalogIterator.hasNext()) {
-			CatalogNode catalogNode = xmlCatalogIterator.next();
-			System.out.println("***** NODE CONTENT *****");
-			System.out.println(catalogNode != null && catalogNode.getContent() != null ?
-					NodeUtil.toString(catalogNode.getContent(), true, true) : "Null for now");
-			System.out.println("**** NEXT NODE *******");
+				try {
+					XmlCatalogIterator xmlCatalogIterator = new XmlCatalogIterator(config, completeIndex, zipFile.getInputStream(entry), visitedNodes, unfinishedRoots);
+
+					while (xmlCatalogIterator.hasNext()) {
+						CatalogNode catalogNode = xmlCatalogIterator.next();
+						System.out.println("***** NODE CONTENT *****");
+						System.out.println(catalogNode != null && catalogNode.getContent() != null ?
+							NodeUtil.toString(catalogNode.getContent(), true, true) : "Null for now");
+						System.out.println("**** NEXT NODE *******");
+				}
+
+				// preserve state for next file
+					visitedNodes = xmlCatalogIterator.getVisitedNodes();
+					unfinishedRoots = xmlCatalogIterator.getUnfinishedRoots();
+
+				} catch (IOException e) {
+					e.printStackTrace();
+					}
+				}
+
+			try {
+				zipFile.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
 		}
+
+//		XmlWoodStockIndexer indexer = new XmlWoodStockIndexer(config);
+//
+//		indexer.index();
+//
+//		XmlCatalogIterator xmlCatalogIterator = new XmlCatalogIterator(config, indexer.getNodeMap());
+//
+//		while (xmlCatalogIterator.hasNext()) {
+//			CatalogNode catalogNode = xmlCatalogIterator.next();
+//			System.out.println("***** NODE CONTENT *****");
+//			System.out.println(catalogNode != null && catalogNode.getContent() != null ?
+//					NodeUtil.toString(catalogNode.getContent(), true, true) : "Null for now");
+//			System.out.println("**** NEXT NODE *******");
+//		}
 
 //		indexer.getNodeMap();
 
@@ -194,5 +214,13 @@ public class Main {
 		});
 
 		return documentItems.iterator();
+	}
+
+	private static Multimap<CatalogIdentifier, CatalogNode> combine(Vector<Multimap<CatalogIdentifier, CatalogNode>> multimaps) {
+		Multimap<CatalogIdentifier, CatalogNode> combined = ArrayListMultimap.create();  // or whatever kind you'd like
+
+		multimaps.forEach(combined::putAll);
+
+		return combined;
 	}
 }

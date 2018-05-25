@@ -3,8 +3,12 @@ package parser;
 import com.google.common.collect.Multimap;
 import com.sun.org.apache.xpath.internal.jaxp.XPathFactoryImpl;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -13,7 +17,16 @@ import java.util.*;
 
 public class XmlCatalogMapParser {
 
-    private static final String PARSE_EXP = "catalogueItem[1]/tradeItem/tradeItemInformation/tradingPartnerNeutralTradeItemInformation/packagingMaterial/packagingMaterialCompositionQuantity/measurementValue/@unitOfMeasure";
+    private static final String PARSE_EXP = "catalogueItem[last()]/tradeItem/tradeItemInformation/tradingPartnerNeutralTradeItemInformation/packagingMaterial/packagingMaterialCompositionQuantity/measurementValue/@unitOfMeasure";
+
+    private static final String PARSE_EXP2 = "./*[1]/*[2]/catalogueItem/tradeItem/tradeItemInformation/tradingPartnerNeutralTradeItemInformation/packagingMaterial/packagingMaterialCompositionQuantity/measurementValue/@unitOfMeasure";
+
+    private static final String T1 = "./catalogueItem[last()]/tradeItem/tradeItemUnitDescriptor";
+
+    private static final String T2 = "catalogueItem[last()]/tradeItem/tradeItemUnitDescriptor";
+
+    private static final String CONCAT = "concat(" + T2  + "," + T1 + ")";
+
 
     private XmlWoodStockCatalogParser xmlWoodStockCatalogParser;
 
@@ -27,6 +40,9 @@ public class XmlCatalogMapParser {
 
     private CatalogNode lastReturnedNode = null;
 
+    private DocumentBuilder builder;
+
+
     public XmlCatalogMapParser(XmlWoodStockCatalogParser xmlWoodStockCatalogParser) {
         this.xmlWoodStockCatalogParser = xmlWoodStockCatalogParser;
 
@@ -35,6 +51,14 @@ public class XmlCatalogMapParser {
         this.visitedNodes = new ArrayList<>();
 
         this.unfinishedRoots = new Stack<>();
+
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+
+        try {
+            builder = dbf.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        }
     }
 
     // for zip files to continue from latest state
@@ -53,6 +77,14 @@ public class XmlCatalogMapParser {
             this.unfinishedRoots = unfinishedRoots;
         } else {
             this.unfinishedRoots = new Stack<>();
+        }
+
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+
+        try {
+            builder = dbf.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
         }
 
     }
@@ -84,6 +116,23 @@ public class XmlCatalogMapParser {
         CatalogNode catalogNode = getNode();
 
         if (isRootAndLeaf(catalogNode)) {
+
+            XPath xPath = new XPathFactoryImpl().newXPath();
+
+            XPathExpression expression = null;
+            try {
+                expression = xPath.compile(T2);
+            } catch (XPathExpressionException e) {
+                e.printStackTrace();
+            }
+            try {
+                System.out.println("*** TEST XPATH ***");
+                System.out.println(expression.evaluate(catalogNode.getContent(), XPathConstants.STRING).toString());
+                System.out.println("*** END TEST XPATH ***");
+            } catch (XPathExpressionException e) {
+                e.printStackTrace();
+            }
+
             return catalogNode;
         }
 
@@ -133,33 +182,27 @@ public class XmlCatalogMapParser {
     private CatalogNode parseRootDependency(CatalogNode currentNode, CatalogNode previousNode) {
         if (!currentNode.hasChildren() && visitedNodes.contains(currentNode.getUniqueIdentifier())) {
 
-//            if (currentNode.getUniqueIdentifier().equals(new CatalogIdentifier("04049500255431", "1698705"))) {
-//                System.out.println();
-//            }
+            if (currentNode.getContent() == null || previousNode.getContent() == null) {
+                System.out.println();
+            }
 
-//            currentNode.setBaseContent(root.getContent());
+            currentNode.setContent(createNewUnifiedDocument(new CatalogNode(currentNode).getContent(), new CatalogNode(previousNode).getContent()));
 
-            Node n1 = currentNode.getContent();
-            Document document = n1.getOwnerDocument();
-            Node docNode = document.importNode(previousNode.getContent(), true);
-            docNode.appendChild(currentNode.getContent());
-            currentNode.setContent(docNode);
+            XPath xPath = new XPathFactoryImpl().newXPath();
 
-//            XPath xPath = new XPathFactoryImpl().newXPath();
-//
-//            XPathExpression expression = null;
-//            try {
-//                expression = xPath.compile(PARSE_EXP);
-//            } catch (XPathExpressionException e) {
-//                e.printStackTrace();
-//            }
-//            try {
-//                System.out.println("*** TEST XPATH ***");
-//                System.out.println(expression.evaluate(currentNode.getContent(), XPathConstants.STRING).toString());
-//                System.out.println("*** END TEST XPATH ***");
-//            } catch (XPathExpressionException e) {
-//                e.printStackTrace();
-//            }
+            XPathExpression expression = null;
+            try {
+                expression = xPath.compile(PARSE_EXP);
+            } catch (XPathExpressionException e) {
+                e.printStackTrace();
+            }
+            try {
+                System.out.println("*** TEST XPATH ***");
+                System.out.println(expression.evaluate(currentNode.getContent(), XPathConstants.STRING).toString());
+                System.out.println("*** END TEST XPATH ***");
+            } catch (XPathExpressionException e) {
+                e.printStackTrace();
+            }
 
             previousNode.removeDependency(currentNode.getUniqueIdentifier());
 
@@ -193,4 +236,44 @@ public class XmlCatalogMapParser {
         return parseRootDependency(catalogNodeMap.get(childNodeUniqueIdentifier.get()).stream().findFirst().get(), currentNode);
     }
 
+
+    private Node createNewUnifiedDocument(Node currentNode, Node previousNode) {
+        Document combinedDocument = createDocumentWithRoot();
+
+        combinedDocument.adoptNode(currentNode);
+        combinedDocument.adoptNode(previousNode);
+
+        Node root = combinedDocument.getFirstChild();
+
+        root.appendChild(previousNode);
+        root.appendChild(currentNode);
+
+        return root;
+    }
+
+    private Node addRootToNode(Node node) {
+
+        if (node == null) {
+            System.out.println();
+        }
+
+        Document document = createDocumentWithRoot();
+
+        document.adoptNode(node);
+
+        Node root = document.getFirstChild();
+
+        root.appendChild(node);
+
+        return root;
+    }
+
+    private Document createDocumentWithRoot() {
+        Document document = builder.newDocument();
+
+        Element root = document.createElement("root");
+        document.appendChild(root);
+
+        return document;
+    }
 }

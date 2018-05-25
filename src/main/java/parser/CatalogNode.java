@@ -1,5 +1,7 @@
 package parser;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.w3c.dom.Node;
 
 import java.util.ArrayList;
@@ -76,5 +78,27 @@ public class CatalogNode {
 
 	public void setUniqueIdentifier(CatalogIdentifier uniqueIdentifier) {
 		this.uniqueIdentifier = uniqueIdentifier;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+
+		if (o == null || getClass() != o.getClass()) return false;
+
+		CatalogNode that = (CatalogNode) o;
+
+		return new EqualsBuilder()
+				.append(isRoot, that.isRoot)
+				.append(uniqueIdentifier, that.uniqueIdentifier)
+				.isEquals();
+	}
+
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 37)
+				.append(uniqueIdentifier)
+				.append(isRoot)
+				.toHashCode();
 	}
 }

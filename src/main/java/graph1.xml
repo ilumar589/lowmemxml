@@ -117,7 +117,7 @@
 											</packagingMarking>
 											<packagingMaterial>
 												<packagingMaterialCompositionQuantity>
-													<measurementValue unitOfMeasure="EA">
+													<measurementValue unitOfMeasure="N3 Measure">
 														<value>1</value>
 													</measurementValue>
 												</packagingMaterialCompositionQuantity>
@@ -236,7 +236,7 @@
 											</packagingMarking>
 											<packagingMaterial>
 												<packagingMaterialCompositionQuantity>
-													<measurementValue unitOfMeasure="PK">
+													<measurementValue unitOfMeasure="N2 measure">
 														<value>1</value>
 													</measurementValue>
 												</packagingMaterialCompositionQuantity>
@@ -347,7 +347,7 @@
 											</packagingMarking>
 											<packagingMaterial>
 												<packagingMaterialCompositionQuantity>
-													<measurementValue unitOfMeasure="CT">
+													<measurementValue unitOfMeasure="N6 measure">
 														<value>1</value>
 													</measurementValue>
 												</packagingMaterialCompositionQuantity>
@@ -458,7 +458,7 @@
 											</packagingMarking>
 											<packagingMaterial>
 												<packagingMaterialCompositionQuantity>
-													<measurementValue unitOfMeasure="PL">
+													<measurementValue unitOfMeasure="N4 measure">
 														<value>1</value>
 													</measurementValue>
 												</packagingMaterialCompositionQuantity>
@@ -559,7 +559,7 @@
 											</packagingMarking>
 											<packagingMaterial>
 												<packagingMaterialCompositionQuantity>
-													<measurementValue unitOfMeasure="PL">
+													<measurementValue unitOfMeasure="N1 measure">
 														<value>1</value>
 													</measurementValue>
 												</packagingMaterialCompositionQuantity>
@@ -670,7 +670,7 @@
 											</packagingMarking>
 											<packagingMaterial>
 												<packagingMaterialCompositionQuantity>
-													<measurementValue unitOfMeasure="PL">
+													<measurementValue unitOfMeasure="N5 measure">
 														<value>1</value>
 													</measurementValue>
 												</packagingMaterialCompositionQuantity>

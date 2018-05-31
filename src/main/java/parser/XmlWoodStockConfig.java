@@ -1,5 +1,7 @@
 package parser;
 
+import java.util.List;
+
 public class XmlWoodStockConfig {
 
 	private String filePath;
@@ -32,7 +34,16 @@ public class XmlWoodStockConfig {
 
 	private String vendorProductNumberTypeValue;
 
+
+
+
+	// refactored values
+	private String barcodeTag;
+	private String childBarcodeTag;
+	private String vendorProductNumberTag;
+	private String vendorProductNumberTypeTagAndValue;
 	private String packagingTag;
+	private String childIdentifierTag;
 
 	private XmlWoodStockConfig(Builder builder) {
 		this.filePath = builder.filePath;
@@ -65,7 +76,19 @@ public class XmlWoodStockConfig {
 
 		this.vendorProductNumberTypeValue = builder.vendorProductNumberTypeValue;
 
+		// refactored values
+
+		this.barcodeTag = builder.barcodeTag;
+
+		this.childBarcodeTag = builder.childBarcodeTag;
+
+		this.vendorProductNumberTag = builder.vendorProductNumberTag;
+
+		this.vendorProductNumberTypeTagAndValue = builder.vendorProductNumberTypeTagAndValue;
+
 		this.packagingTag = builder.packagingTag;
+
+		this.childIdentifierTag = builder.childIdentifierTag;
 	}
 
 	public String getFilePath() {
@@ -128,6 +151,54 @@ public class XmlWoodStockConfig {
 		return vendorProductNumberTypeValue;
 	}
 
+	public String getBarcodeTag() {
+		return barcodeTag;
+	}
+
+	public void setBarcodeTag(String barcodeTag) {
+		this.barcodeTag = barcodeTag;
+	}
+
+	public String getChildBarcodeTag() {
+		return childBarcodeTag;
+	}
+
+	public void setChildBarcodeTag(String childBarcodeTag) {
+		this.childBarcodeTag = childBarcodeTag;
+	}
+
+	public String getVendorProductNumberTag() {
+		return vendorProductNumberTag;
+	}
+
+	public void setVendorProductNumberTag(String vendorProductNumberTag) {
+		this.vendorProductNumberTag = vendorProductNumberTag;
+	}
+
+	public String getVendorProductNumberTypeTagAndValue() {
+		return vendorProductNumberTypeTagAndValue;
+	}
+
+	public void setVendorProductNumberTypeTagAndValue(String vendorProductNumberTypeTagAndValue) {
+		this.vendorProductNumberTypeTagAndValue = vendorProductNumberTypeTagAndValue;
+	}
+
+	public String getPackagingTag() {
+		return packagingTag;
+	}
+
+	public void setPackagingTag(String packagingTag) {
+		this.packagingTag = packagingTag;
+	}
+
+	public String getChildIdentifierTag() {
+		return childIdentifierTag;
+	}
+
+	public void setChildIdentifierTag(String childIdentifierTag) {
+		this.childIdentifierTag = childIdentifierTag;
+	}
+
 	public static final class Builder {
 
 		private String filePath;
@@ -160,7 +231,14 @@ public class XmlWoodStockConfig {
 
 		private String vendorProductNumberTypeValue;
 
+		// refactored values
+		private String barcodeTag;
+		private String childBarcodeTag;
+		private String vendorProductNumberTag;
+		private String vendorProductNumberTypeTagAndValue;
 		private String packagingTag;
+		private String childIdentifierTag;
+
 
 		public static Builder xmlWoodStockConfig() {return new Builder();}
 
@@ -236,6 +314,33 @@ public class XmlWoodStockConfig {
 
 		public Builder withVendorProductNumberTypeValue(String vendorProductNumberTypeValue) {
 			this.vendorProductNumberTypeValue = vendorProductNumberTypeValue;
+			return this;
+		}
+
+
+		//refactored values
+		public Builder withBarcodeTag(String barcodeTag) {
+			this.barcodeTag = barcodeTag;
+			return this;
+		}
+
+		public Builder withChildBarcodeTag(String childBarcodeTag) {
+			this.childBarcodeTag = childBarcodeTag;
+			return this;
+		}
+
+		public Builder withVendorProductNumberTag(String vendorProductNumberTag) {
+			this.vendorProductNumberTag = vendorProductNumberTag;
+			return this;
+		}
+
+		public Builder withVendorProductNumberTypeTagAndValue(String vendorProductNumberTypeTagAndValue) {
+			this.vendorProductNumberTypeTagAndValue = vendorProductNumberTypeTagAndValue;
+			return this;
+		}
+
+		public Builder withChildIdentifierTag(String childIdentifierTag) {
+			this.childIdentifierTag = childIdentifierTag;
 			return this;
 		}
 

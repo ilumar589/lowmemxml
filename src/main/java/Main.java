@@ -50,9 +50,18 @@ public class Main {
 	private static final String VPN_TYPE_VALUE = "SUPPLIER_ASSIGNED";
 
 
+	// refactor settings
+	// check with a maximum of 3 stack distance
+	private static final String BARCODE_TAG = "tradeItem/tradeItemIdentification/gtin";
+	private static final String CHILD_BARCODE_TAG = "childTradeItem/tradeItemIdentification/gtin";
+	private static final String VENDOR_PRODUCT_NUMBER_TAG = "additionalTradeItemIdentification/additionalTradeItemIdentificationValue";
+	private static final String VENDOR_PRODUCT_NUMBER_TYPE_TAG_AND_VALUE = "additionalTradeItemIdentification/additionalTradeItemIdentificationType=SUPPLIER_ASSIGNED";
+	private static final String PACKAGING_TAG = "tradeItemUnitDescriptor";
+	private static final String CHILD_IDENTIFIER_TAG = "childTradeItem";
+
 	public static void main(String[] args) {
 		XmlWoodStockConfig config = xmlWoodStockConfig()
-				.withFilePath(HARTMAN_FULL)
+				.withFilePath(HARTMAN_SMALL)
 				.withEncoding(ENCODING)
 				.withContainingTag(CONTAINING_TAG)
 				.withUniqueIdentifierTag(UNIQUE_IDENTIFIER_TAG)
@@ -67,6 +76,14 @@ public class Main {
 				.withVendorProductNumberValueTag(VPN_VALUE_TAG)
 				.withVendorProductNumberTypeTag(VPN_TYPE_TAG)
 				.withVendorProductNumberTypeValue(VPN_TYPE_VALUE)
+
+				// refactored values
+				.withBarcodeTag(BARCODE_TAG)
+				.withChildBarcodeTag(CHILD_BARCODE_TAG)
+				.withVendorProductNumberTag(VENDOR_PRODUCT_NUMBER_TAG)
+				.withVendorProductNumberTypeTagAndValue(VENDOR_PRODUCT_NUMBER_TYPE_TAG_AND_VALUE)
+				.withPackagingTag(PACKAGING_TAG)
+//				.withChildIdentifierTag(CHILD_IDENTIFIER_TAG)
 				.build();
 
 		// ----- ZIP TEST -----

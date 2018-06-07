@@ -96,13 +96,6 @@ public class XmlCatalogMapParser {
         return xmlWoodStockCatalogParser.hasNext() || lastReturnedNode != null;
     }
 
-    public boolean countersJustInitialized() {
-        return removedFromNodeTreeCounter == 0 && xmlWoodStockCatalogParser.getNrOfReadNodes() == 0;
-    }
-
-    public boolean readNodesHaveNotBeenRemoved() {
-        return removedFromNodeTreeCounter != xmlWoodStockCatalogParser.getNrOfReadNodes() || xmlWoodStockCatalogParser.hasNext();
-    }
 
     public Collection<CatalogIdentifier> getVisitedNodes() {
         return visitedNodes;
@@ -116,6 +109,10 @@ public class XmlCatalogMapParser {
         CatalogNode catalogNode = getNode();
 
         if (isRootAndLeaf(catalogNode)) {
+
+            if (catalogNode.getContent() == null) {
+                return null;
+            }
 
             XPath xPath = new XPathFactoryImpl().newXPath();
 

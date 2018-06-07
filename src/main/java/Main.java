@@ -36,6 +36,8 @@ public class Main {
 
 	private static final String HARTMAN_ZIP = "E:\\projects\\lowmem\\src\\main\\java\\IVFHartmann_GS1_example_small_split.zip";
 
+	private static final String FINAL = "C:\\Users\\eduard.parvu\\Downloads\\180116_Original_Artikelkatalog_Mölnlycke_Health_Care_AG_DE_GS1-3.1_CH.xml";
+
 	private static final String ENCODING = "UTF8";
 	private static final String CONTAINING_TAG = "catalogueItem";
 	private static final String UNIQUE_IDENTIFIER_TAG = "gtin";
@@ -57,7 +59,13 @@ public class Main {
 	private static final String VENDOR_PRODUCT_NUMBER_TAG = "additionalTradeItemIdentification/additionalTradeItemIdentificationValue";
 	private static final String VENDOR_PRODUCT_NUMBER_TYPE_TAG_AND_VALUE = "additionalTradeItemIdentification/additionalTradeItemIdentificationType=SUPPLIER_ASSIGNED";
 	private static final String PACKAGING_TAG = "tradeItemUnitDescriptor";
-	private static final String CHILD_IDENTIFIER_TAG = "childTradeItem";
+
+	// second config type
+	private static final String BARCODE_TAG_2 = "tradeItem/gtin";
+	private static final String CHILD_BARCODE_TAG_2 = "childTradeItem/gtin";
+	private static final String VENDOR_PRODUCT_NUMBER_TAG_2 = "tradeItem/additionalTradeItemIdentification";
+	private static final String VENDOR_PRODUCT_NUMBER_TYPE_TAG_AND_VALUE_2 = "tradeItem/additionalTradeItemIdentification=SUPPLIER_ASSIGNED";
+	private static final String PACKAGING_TAG_2 = "tradeItem/tradeItemUnitDescriptorCode";
 
 	public static void main(String[] args) {
 		XmlWoodStockConfig config = xmlWoodStockConfig()

@@ -12,6 +12,8 @@ import javax.xml.stream.events.XMLEvent;
 import java.io.*;
 import java.util.*;
 
+import static java.lang.Boolean.TRUE;
+
 public class XmlWoodStockIndexer {
 
 	private XmlWoodStockConfig config;
@@ -32,11 +34,24 @@ public class XmlWoodStockIndexer {
 
 	private boolean isLatestReadNodeRoot = false;
 
+	private CatalogNode lastCatalogNode;
+
 	//-----------------------------------
 
 	private Multimap<String, CatalogNode> unfinishedDependencies;
 
 	private Multimap<String, CatalogNode> visitedNodes;
+
+	// ---------------------------------
+
+	private List<String> barcodePath;
+	private List<String> childBarcodePath;
+	private List<String> vendorProductNumberPath;
+	private List<String> vendorProductNumberTypePath;
+	private StringBuilder vendorProductNumberTypeValue;
+	private List<String> packagingPath;
+
+	private String savedVendorProductNumberAttribute;
 
 	public XmlWoodStockIndexer(XmlWoodStockConfig config) {
 		this.config = config;
@@ -44,6 +59,8 @@ public class XmlWoodStockIndexer {
 		this.nodeFactory = new NodeFactory();
 		this.unfinishedDependencies = ArrayListMultimap.create();
 		this.visitedNodes = ArrayListMultimap.create();
+
+		setupTagPaths();
 
 		XMLInputFactory factory =  XMLInputFactory.newInstance();
 
@@ -99,26 +116,40 @@ public class XmlWoodStockIndexer {
 
 	private void handleStartElement() {
 		tagStack.push(reader.getName().getLocalPart());
+
+		/* save vendor product number tag type attribute */
+		if (checkTagExistence(vendorProductNumberTypePath) &&
+				reader.getAttributeCount() != 0 &&
+				vendorProductNumberTypeValue.toString().equalsIgnoreCase(reader.getAttributeValue(0))) {
+			savedVendorProductNumberAttribute = reader.getAttributeValue(0);
+		}
 	}
 
 	private void handleCharacters() {
-		determineRootNode();
+
+		determinePackaging();
 
 		determineBarcode();
 
 		determineVendorProductNumber();
 
+		lastCatalogNode = generateNode();
+
 		determineDependency();
 
 	}
 
-	private void determineRootNode() {
-		if (config.getRootTag().equalsIgnoreCase(tagStack.peek())) {
-
+	private void determinePackaging() {
+		if (checkTagExistence(packagingPath)) {
 			lastReadPackaging = reader.getText().trim();
-
-			isLatestReadNodeRoot = config.getRootTagValue().equalsIgnoreCase(lastReadPackaging);
 		}
+
+//		if (config.getRootTag().equalsIgnoreCase(tagStack.peek())) {
+//
+//			lastReadPackaging = reader.getText().trim();
+//
+//			isLatestReadNodeRoot = config.getRootTagValue().equalsIgnoreCase(lastReadPackaging);
+//		}
 	}
 
 	private void determineBarcode() {
@@ -128,20 +159,27 @@ public class XmlWoodStockIndexer {
 		 * saved in order to be used later if a dependency tag
 		 * is found
 		 */
-		if (!config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
-				config.getUniqueIdentifierContainerTag().equalsIgnoreCase(getPreviousElement(config.getUniqueIdentifierContainerTagStackDistance())) &&
-				config.getUniqueIdentifierTag().equalsIgnoreCase(tagStack.peek())) {
 
-			lastReadBarcode = reader.getText().trim();
+		if (checkTagExistence(barcodePath)) {
+			lastReadBarcode  = removeLeadingZeros(reader.getText().trim());
 		}
+
+//		if (!config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
+//				config.getUniqueIdentifierContainerTag().equalsIgnoreCase(getPreviousElement(config.getUniqueIdentifierContainerTagStackDistance())) &&
+//				config.getUniqueIdentifierTag().equalsIgnoreCase(tagStack.peek())) {
+//
+//			lastReadBarcode = reader.getText().trim();
+//		}
 	}
 
 	private void determineDependency() {
-		if (config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
-				config.getDependencyTag().equalsIgnoreCase(tagStack.peek())) {
 
-			//TODO figure it out
+		if (checkTagExistence(childBarcodePath)) {
+
+			lastCatalogNode.setRoot(false);
+
 			CatalogIdentifier catalogIdentifier = new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging);
+
 			Optional<CatalogNode> currentCatalogNode = nodeFactory.getNode(catalogIdentifier).stream().findFirst();
 			if (!currentCatalogNode.isPresent()) {
 				try {
@@ -151,8 +189,29 @@ public class XmlWoodStockIndexer {
 				}
 			}
 
-			checkCurrentNodeForVisitedDependencies(reader.getText().trim(), currentCatalogNode.get());
+			CatalogNode catalogNode = currentCatalogNode.get();
+
+
+
+			checkCurrentNodeForVisitedDependencies(removeLeadingZeros(reader.getText().trim()), catalogNode );
 		}
+
+//		if (config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
+//				config.getDependencyTag().equalsIgnoreCase(tagStack.peek())) {
+//
+//			//TODO figure it out
+//			CatalogIdentifier catalogIdentifier = new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging);
+//			Optional<CatalogNode> currentCatalogNode = nodeFactory.getNode(catalogIdentifier).stream().findFirst();
+//			if (!currentCatalogNode.isPresent()) {
+//				try {
+//					throw new Exception("Can't find node for: " + catalogIdentifier.toString());
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//			}
+//
+//			checkCurrentNodeForVisitedDependencies(reader.getText().trim(), currentCatalogNode.get());
+//		}
 	}
 
 	private void checkCurrentNodeForUnfinishedDependencies(CatalogNode currentNode) {
@@ -193,34 +252,55 @@ public class XmlWoodStockIndexer {
 
 
 	private void determineVendorProductNumber() {
-		/** if we are inside the vendor product number containing tag**/
-		if (config.getVendorProductNumberContainingTag().equalsIgnoreCase(getPreviousElement(2))) {
 
-			/** the vendor product number values is found before the type so it has to be stored until
-			 * we cant test that it's supplier assigned **/
-			if (config.getVendorProductNumberValueTag().equalsIgnoreCase(tagStack.peek())) {
-				tempVendorProductNumber = reader.getText().trim();
-			}
-
-			/** if we reach the vendor product number type tag and it's value is supplier assigned **/
-			if (config.getVendorProductNumberTypeTag().equalsIgnoreCase(tagStack.peek()) &&
-					config.getVendorProductNumberTypeValue().equalsIgnoreCase(reader.getText().trim())) {
-				lastReadVendorProductNumber = tempVendorProductNumber;
-
-				generateNode();
-			}
+		if (checkTagExistence(vendorProductNumberPath)) {
+			tempVendorProductNumber = reader.getText().trim();
 		}
+
+		/* vendor product type is declared either as a separate tag with the tag value being
+		* SUPPLIER_ASSIGNED/somethig else or as a single tag with the type being a tag attribute*/
+		if (checkTagExistence(vendorProductNumberTypePath) &&
+				(vendorProductNumberTypeValue.toString().equalsIgnoreCase(reader.getText().trim()) || savedVendorProductNumberAttribute != null)) {
+
+			lastReadVendorProductNumber = tempVendorProductNumber;
+
+			savedVendorProductNumberAttribute = null;
+
+//			tempVendorProductNumber == null ? reader.getText() :
+		}
+
+//		/** if we are inside the vendor product number containing tag**/
+//		if (config.getVendorProductNumberContainingTag().equalsIgnoreCase(getPreviousElement(2))) {
+//
+//			/** the vendor product number values is found before the type so it has to be stored until
+//			 * we cant test that it's supplier assigned **/
+//			if (config.getVendorProductNumberValueTag().equalsIgnoreCase(tagStack.peek())) {
+//				tempVendorProductNumber = reader.getText().trim();
+//			}
+//
+//			/** if we reach the vendor product number type tag and it's value is supplier assigned **/
+//			if (config.getVendorProductNumberTypeTag().equalsIgnoreCase(tagStack.peek()) &&
+//					config.getVendorProductNumberTypeValue().equalsIgnoreCase(reader.getText().trim())) {
+//				lastReadVendorProductNumber = tempVendorProductNumber;
+//
+//				generateNode();
+//			}
+//		}
 	}
 
-	private void generateNode() {
+	private CatalogNode generateNode() {
 		if (lastReadBarcode != null && lastReadVendorProductNumber != null && lastReadPackaging != null) {
 
-			CatalogNode catalogNode = nodeFactory.generateNode(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging), isLatestReadNodeRoot);
+			CatalogNode catalogNode = nodeFactory.generateNode(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging), true);
 
 			visitedNodes.put(lastReadBarcode, catalogNode);
 
 			checkCurrentNodeForUnfinishedDependencies(catalogNode);
+
+			return catalogNode;
 		}
+
+		return null;
 	}
 
 	private void handleEndElement() {
@@ -236,6 +316,71 @@ public class XmlWoodStockIndexer {
 		return tagStack.get(tagStackSize - distance);
 	}
 
+	private void setupTagPaths() {
+		this.vendorProductNumberTypeValue = new StringBuilder();
+		this.vendorProductNumberTypePath = new ArrayList<>();
+		this.barcodePath = splitSetting(this.config.getBarcodeTag(), "/");
+		this.childBarcodePath = splitSetting(this.config.getChildBarcodeTag(), "/");
+		this.vendorProductNumberPath = splitSetting(this.config.getVendorProductNumberTag(), "/");
+		this.packagingPath = splitSetting(this.config.getPackagingTag(), "/");
+
+		setupTagPathAndValue(this.vendorProductNumberTypePath, this.vendorProductNumberTypeValue, this.config.getVendorProductNumberTypeTagAndValue());
+
+		// TODO do value extraction in separate generic function
+//		this.vendorProductNumberTypePath = splitSetting(this.config.getVendorProductNumberTypeTagAndValue(), "/");
+//
+//		String vpnTagWithValue = this.vendorProductNumberTypePath.get(this.vendorProductNumberTypePath.size() - 1);
+//
+//		List<String> splitVpnTagWithValue = splitSetting(vpnTagWithValue, "=");
+//
+//		this.vendorProductNumberTypeValue = splitVpnTagWithValue.get(splitVpnTagWithValue.size() - 1);
+//
+//		// last tag in vendorProductNumberTypePath must be replaced with the same tag without the value
+//		// Again this must be done in a separate generic function
+//
+//		this.vendorProductNumberTypePath.set(this.vendorProductNumberTypePath.size() - 1, splitVpnTagWithValue.get(0));
+
+		System.out.println(); // to set breakpoint
+
+	}
+
+	private void setupTagPathAndValue(List<String> tag, StringBuilder tagValue, String configValue) {
+		tag.addAll(splitSetting(configValue, "/"));
+
+		String pathWithValue = tag.get(tag.size() - 1);
+		List<String> splitPathWithValue = splitSetting(pathWithValue, "=");
+
+		tagValue.append(splitPathWithValue.get(splitPathWithValue.size() - 1));
+
+		tag.set(tag.size() - 1, splitPathWithValue.get(0));
+
+	}
+
+	private List<String> splitSetting(String setting, String regex) {
+		return Arrays.asList(setting.split(regex));
+	}
+
+	private boolean checkTagExistence(List<String> tagElements) {
+
+		List<Boolean> conditionList = new ArrayList<>();
+
+		// size - index
+		int elementsSize = tagElements.size();
+		for (int i = 0; i < elementsSize; i++) {
+			if (tagElements.get(i).equalsIgnoreCase(getPreviousElement(elementsSize - i))) {
+				conditionList.add(true);
+			} else {
+				conditionList.add(false);
+			}
+		}
+
+		return conditionList.stream().allMatch(TRUE::equals);
+	}
+
+	private String removeLeadingZeros(String barcode) {
+		return barcode.replaceAll("^(0+(?!$))", "");
+	}
+
 	private static final class NodeFactory {
 
 		private Multimap<CatalogIdentifier, CatalogNode> nodeMap;
@@ -244,8 +389,9 @@ public class XmlWoodStockIndexer {
 			this.nodeMap = ArrayListMultimap.create();
 		}
 
-		private CatalogNode generateNode(CatalogIdentifier uniqueIdentifier, boolean isRootNode) {
-			CatalogNode catalogNode = new CatalogNode(uniqueIdentifier, isRootNode);
+		private CatalogNode generateNode(CatalogIdentifier uniqueIdentifier, boolean isRoot) {
+			// assume it's root on first generation
+			CatalogNode catalogNode = new CatalogNode(uniqueIdentifier, isRoot);
 
 			nodeMap.put(uniqueIdentifier, catalogNode);
 
@@ -261,4 +407,6 @@ public class XmlWoodStockIndexer {
 		}
 
 	}
+
+
 }

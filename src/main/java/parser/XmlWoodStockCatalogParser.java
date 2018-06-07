@@ -12,6 +12,8 @@ import javax.xml.stream.events.*;
 import java.io.*;
 import java.util.*;
 
+import static java.lang.Boolean.TRUE;
+
 public class XmlWoodStockCatalogParser {
 
 	private XmlWoodStockConfig config;
@@ -34,7 +36,15 @@ public class XmlWoodStockCatalogParser {
 
 	private String tempVendorProductNumber;
 
-	private int nrOfReadNodes = 0;
+// ---------------------------------
+
+	private List<String> barcodePath;
+	private List<String> vendorProductNumberPath;
+	private List<String> vendorProductNumberTypePath;
+	private StringBuilder vendorProductNumberTypeValue;
+	private List<String> packagingPath;
+
+	private String savedVendorProductNumberAttribute;
 
 	public XmlWoodStockCatalogParser(XmlWoodStockConfig config, Multimap<CatalogIdentifier, CatalogNode> catalogNodeMap) {
 		this.config = config;
@@ -48,6 +58,8 @@ public class XmlWoodStockCatalogParser {
 		}
 
 		this.tagStack = new Stack<>();
+
+		setupTagPaths();
 
 		XMLInputFactory factory = XMLInputFactory.newInstance();
 
@@ -81,10 +93,6 @@ public class XmlWoodStockCatalogParser {
 		}
 	}
 
-	public int getNrOfReadNodes() {
-		return nrOfReadNodes;
-	}
-
 	public boolean hasNext() {
 		return reader.hasNext();
 	}
@@ -96,36 +104,34 @@ public class XmlWoodStockCatalogParser {
 		try {
 			while (reader.hasNext()) {
 				XMLEvent event = (XMLEvent) reader.next();
-
 				if (event.isStartElement() && handleStartElement(event.asStartElement())) {
-
 					insideMatchingNode = true;
-
 				} else if (event.isEndElement() && handleEndElement(event.asEndElement())) {
-
 					lastReadCatalogNode.setContent(nodeFactory.createNode());
-					nrOfReadNodes ++;
-
 					break;
 
 				} else if (insideMatchingNode) {
-
 					nodeFactory.add(event);
-
 					switch (event.getEventType()) {
-
 						case XMLEvent.START_ELEMENT: {
-
 							tagStack.push(event.asStartElement().getName().getLocalPart());
 
+							String type = null;
+
+							Iterator<Attribute> attributeIterator = event.asStartElement().getAttributes();
+							if (attributeIterator.hasNext()) {
+								type = attributeIterator.next().getValue();
+							}
+
+							/* save vendor product number tag type attribute */
+							if (checkTagExistence(vendorProductNumberTypePath) && type != null && vendorProductNumberTypeValue.toString().equalsIgnoreCase(type)) {
+								savedVendorProductNumberAttribute = type;
+							}
+
 						}break;
-
 						case XMLEvent.END_ELEMENT: {
-
 							if (!tagStack.isEmpty()) {
-
 								tagStack.pop();
-
 							}
 						}break;
 					}
@@ -138,7 +144,6 @@ public class XmlWoodStockCatalogParser {
 		} catch (XMLStreamException e) {
 			e.printStackTrace();
 		}
-
 		return lastReadCatalogNode;
 	}
 
@@ -170,12 +175,18 @@ public class XmlWoodStockCatalogParser {
 		determineBarcode(characters.getData().trim());
 
 		determineVendorProductNumber(characters.getData().trim());
+
+		setLastNode();
 	}
 
 	private void determinePackaging(String text) {
-		if (!tagStack.isEmpty() && config.getRootTag().equalsIgnoreCase(tagStack.peek())) {
+		if (!tagStack.isEmpty() && checkTagExistence(packagingPath)) {
 			lastReadPackaging = text;
 		}
+
+//		if (!tagStack.isEmpty() && config.getRootTag().equalsIgnoreCase(tagStack.peek())) {
+//			lastReadPackaging = text;
+//		}
 	}
 
 	private void setLastNode() {
@@ -216,33 +227,120 @@ public class XmlWoodStockCatalogParser {
 		 * saved in order to be used later if a dependency tag
 		 * is found
 		 */
-		if (!config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
-				config.getUniqueIdentifierContainerTag().equalsIgnoreCase(getPreviousElement(config.getUniqueIdentifierContainerTagStackDistance())) &&
-				config.getUniqueIdentifierTag().equalsIgnoreCase(tagStack.peek())) {
 
-			lastReadBarcode = text;
+		if (checkTagExistence(barcodePath)) {
+			lastReadBarcode  = removeLeadingZeros(text);
 		}
+
+//		if (!config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
+//				config.getUniqueIdentifierContainerTag().equalsIgnoreCase(getPreviousElement(config.getUniqueIdentifierContainerTagStackDistance())) &&
+//				config.getUniqueIdentifierTag().equalsIgnoreCase(tagStack.peek())) {
+//
+//			lastReadBarcode = removeLeadingZeros(text);
+//		}
 	}
 
 	private void determineVendorProductNumber(String text) {
-		/** if we are inside the vendor product number containing tag**/
-		if (config.getVendorProductNumberContainingTag().equalsIgnoreCase(getPreviousElement(2))) {
 
-			/** the vendor product number values is found before the type so it has to be stored until
-			 * we cant test that it's supplier assigned **/
-			if (config.getVendorProductNumberValueTag().equalsIgnoreCase(tagStack.peek())) {
-				tempVendorProductNumber = text;
-			}
-
-			/** if we reach the vendor product number type tag and it's value is supplier assigned **/
-			if (config.getVendorProductNumberTypeTag().equalsIgnoreCase(tagStack.peek()) &&
-					config.getVendorProductNumberTypeValue().equalsIgnoreCase(text)) {
-				lastReadVendorProductNumber = tempVendorProductNumber;
-
-				setLastNode();
-			}
-
+		if (checkTagExistence(vendorProductNumberPath)) {
+			tempVendorProductNumber = text;
 		}
+
+		/* vendor product type is declared either as a separate tag with the tag value being
+		* SUPPLIER_ASSIGNED/somethig else or as a single tag with the type being a tag attribute*/
+		if (checkTagExistence(vendorProductNumberTypePath) &&
+				(vendorProductNumberTypeValue.toString().equalsIgnoreCase(text) || savedVendorProductNumberAttribute != null)) {
+
+			lastReadVendorProductNumber = tempVendorProductNumber;
+
+			savedVendorProductNumberAttribute = null;
+
+//			tempVendorProductNumber == null ? reader.getText() :
+		}
+
+
+//		/** if we are inside the vendor product number containing tag**/
+//		if (config.getVendorProductNumberContainingTag().equalsIgnoreCase(getPreviousElement(2))) {
+//
+//			/** the vendor product number values is found before the type so it has to be stored until
+//			 * we cant test that it's supplier assigned **/
+//			if (config.getVendorProductNumberValueTag().equalsIgnoreCase(tagStack.peek())) {
+//				tempVendorProductNumber = text;
+//			}
+//
+//			/** if we reach the vendor product number type tag and it's value is supplier assigned **/
+//			if (config.getVendorProductNumberTypeTag().equalsIgnoreCase(tagStack.peek()) &&
+//					config.getVendorProductNumberTypeValue().equalsIgnoreCase(text)) {
+//				lastReadVendorProductNumber = tempVendorProductNumber;
+//
+//				setLastNode();
+//			}
+//
+//		}
+	}
+
+	private void setupTagPaths() {
+		this.vendorProductNumberTypeValue = new StringBuilder();
+		this.vendorProductNumberTypePath = new ArrayList<>();
+		this.barcodePath = splitSetting(this.config.getBarcodeTag(), "/");
+		this.vendorProductNumberPath = splitSetting(this.config.getVendorProductNumberTag(), "/");
+		this.packagingPath = splitSetting(this.config.getPackagingTag(), "/");
+
+		setupTagPathAndValue(this.vendorProductNumberTypePath, this.vendorProductNumberTypeValue, this.config.getVendorProductNumberTypeTagAndValue());
+
+		// TODO do value extraction in separate generic function
+//		this.vendorProductNumberTypePath = splitSetting(this.config.getVendorProductNumberTypeTagAndValue(), "/");
+//
+//		String vpnTagWithValue = this.vendorProductNumberTypePath.get(this.vendorProductNumberTypePath.size() - 1);
+//
+//		List<String> splitVpnTagWithValue = splitSetting(vpnTagWithValue, "=");
+//
+//		this.vendorProductNumberTypeValue = splitVpnTagWithValue.get(splitVpnTagWithValue.size() - 1);
+//
+//		// last tag in vendorProductNumberTypePath must be replaced with the same tag without the value
+//		// Again this must be done in a separate generic function
+//
+//		this.vendorProductNumberTypePath.set(this.vendorProductNumberTypePath.size() - 1, splitVpnTagWithValue.get(0));
+
+		System.out.println(); // to set breakpoint
+
+	}
+
+	private void setupTagPathAndValue(List<String> tag, StringBuilder tagValue, String configValue) {
+		tag.addAll(splitSetting(configValue, "/"));
+
+		String pathWithValue = tag.get(tag.size() - 1);
+		List<String> splitPathWithValue = splitSetting(pathWithValue, "=");
+
+		tagValue.append(splitPathWithValue.get(splitPathWithValue.size() - 1));
+
+		tag.set(tag.size() - 1, splitPathWithValue.get(0));
+
+	}
+
+	private List<String> splitSetting(String setting, String regex) {
+		return Arrays.asList(setting.split(regex));
+	}
+
+	private boolean checkTagExistence(List<String> tagElements) {
+
+		List<Boolean> conditionList = new ArrayList<>();
+
+		// size - index
+		int elementsSize = tagElements.size();
+		for (int i = 0; i < elementsSize; i++) {
+			if (tagElements.get(i).equalsIgnoreCase(getPreviousElement(elementsSize - i))) {
+				conditionList.add(true);
+			} else {
+				conditionList.add(false);
+			}
+		}
+
+		return conditionList.stream().allMatch(TRUE::equals);
+	}
+
+	private String removeLeadingZeros(String barcode) {
+		return barcode.replaceAll("^(0+(?!$))", "");
 	}
 
 	private static final class NodeFactory {

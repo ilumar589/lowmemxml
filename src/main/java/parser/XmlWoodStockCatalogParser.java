@@ -176,7 +176,6 @@ public class XmlWoodStockCatalogParser {
 
 		determineVendorProductNumber(characters.getData().trim());
 
-		setLastNode();
 	}
 
 	private void determinePackaging(String text) {
@@ -254,6 +253,8 @@ public class XmlWoodStockCatalogParser {
 			lastReadVendorProductNumber = tempVendorProductNumber;
 
 			savedVendorProductNumberAttribute = null;
+
+			setLastNode();
 
 //			tempVendorProductNumber == null ? reader.getText() :
 		}

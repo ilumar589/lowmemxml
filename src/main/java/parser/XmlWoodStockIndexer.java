@@ -32,9 +32,9 @@ public class XmlWoodStockIndexer {
 
 	private String tempVendorProductNumber;
 
-	private boolean isLatestReadNodeRoot = false;
-
 	private CatalogNode lastCatalogNode;
+
+	private String childBarcode = null;
 
 	//-----------------------------------
 
@@ -89,13 +89,28 @@ public class XmlWoodStockIndexer {
 
 	public void index() {
 		int eventType;
+		boolean insideMatchingNode = false;
 		try {
 			while (reader.hasNext()) {
 				eventType = reader.next();
 
 				switch (eventType) {
 					case XMLEvent.START_ELEMENT: {
-						handleStartElement();
+						if (handleStartElement()) {
+							insideMatchingNode = true;
+						}
+
+						if (insideMatchingNode) {
+
+							tagStack.push(reader.getName().getLocalPart());
+
+							/* save vendor product number tag type attribute */
+							if (checkTagExistence(vendorProductNumberTypePath) &&
+									reader.getAttributeCount() != 0 &&
+									vendorProductNumberTypeValue.toString().equalsIgnoreCase(reader.getAttributeValue(0))) {
+								savedVendorProductNumberAttribute = reader.getAttributeValue(0);
+							}
+						}
 					}break;
 					case XMLEvent.CHARACTERS: {
 						handleCharacters();
@@ -107,6 +122,8 @@ public class XmlWoodStockIndexer {
 			}
 		} catch (XMLStreamException e) {
 			e.printStackTrace();
+		} finally {
+			tagStack.removeAllElements();
 		}
 	}
 
@@ -114,15 +131,13 @@ public class XmlWoodStockIndexer {
 		return nodeFactory.getNodeMap();
 	}
 
-	private void handleStartElement() {
-		tagStack.push(reader.getName().getLocalPart());
-
-		/* save vendor product number tag type attribute */
-		if (checkTagExistence(vendorProductNumberTypePath) &&
-				reader.getAttributeCount() != 0 &&
-				vendorProductNumberTypeValue.toString().equalsIgnoreCase(reader.getAttributeValue(0))) {
-			savedVendorProductNumberAttribute = reader.getAttributeValue(0);
+	private boolean handleStartElement() {
+		if (config.getContainingTag().equals(reader.getName().getLocalPart())) {
+			tagStack.push(reader.getName().getLocalPart());
+			return true;
 		}
+
+		return false;
 	}
 
 	private void handleCharacters() {
@@ -132,8 +147,6 @@ public class XmlWoodStockIndexer {
 		determineBarcode();
 
 		determineVendorProductNumber();
-
-		lastCatalogNode = generateNode();
 
 		determineDependency();
 
@@ -172,28 +185,28 @@ public class XmlWoodStockIndexer {
 //		}
 	}
 
-	private void determineDependency() {
+	private void processDependency() {
+		lastCatalogNode.setRoot(false);
 
-		if (checkTagExistence(childBarcodePath)) {
+		CatalogIdentifier catalogIdentifier = new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging);
 
-			lastCatalogNode.setRoot(false);
-
-			CatalogIdentifier catalogIdentifier = new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging);
-
-			Optional<CatalogNode> currentCatalogNode = nodeFactory.getNode(catalogIdentifier).stream().findFirst();
-			if (!currentCatalogNode.isPresent()) {
-				try {
-					throw new Exception("Can't find node for: " + catalogIdentifier.toString());
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+		Optional<CatalogNode> currentCatalogNode = nodeFactory.getNode(catalogIdentifier).stream().findFirst();
+		if (!currentCatalogNode.isPresent()) {
+			try {
+				throw new Exception("Can't find node for: " + catalogIdentifier.toString());
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
+		}
 
-			CatalogNode catalogNode = currentCatalogNode.get();
+		CatalogNode catalogNode = currentCatalogNode.get();
 
+		checkCurrentNodeForVisitedDependencies(childBarcode, catalogNode );
+	}
 
-
-			checkCurrentNodeForVisitedDependencies(removeLeadingZeros(reader.getText().trim()), catalogNode );
+	private void determineDependency() {
+		if (checkTagExistence(childBarcodePath)) {
+			childBarcode = removeLeadingZeros(reader.getText().trim());
 		}
 
 //		if (config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
@@ -288,7 +301,7 @@ public class XmlWoodStockIndexer {
 //		}
 	}
 
-	private CatalogNode generateNode() {
+	private void generateNode() {
 		if (lastReadBarcode != null && lastReadVendorProductNumber != null && lastReadPackaging != null) {
 
 			CatalogNode catalogNode = nodeFactory.generateNode(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging), true);
@@ -297,14 +310,21 @@ public class XmlWoodStockIndexer {
 
 			checkCurrentNodeForUnfinishedDependencies(catalogNode);
 
-			return catalogNode;
+			lastCatalogNode = catalogNode;
 		}
-
-		return null;
 	}
 
 	private void handleEndElement() {
-		tagStack.pop();
+		if (!tagStack.isEmpty()) {
+			tagStack.pop();
+		}
+
+		if (config.getContainingTag().equals(reader.getName().getLocalPart())) {
+			generateNode();
+			if (childBarcode != null) {
+				processDependency();
+			}
+		}
 	}
 
 	private String getPreviousElement(int distance) {

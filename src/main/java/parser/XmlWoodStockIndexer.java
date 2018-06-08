@@ -13,6 +13,7 @@ import java.io.*;
 import java.util.*;
 
 import static java.lang.Boolean.TRUE;
+import static java.util.Objects.isNull;
 
 public class XmlWoodStockIndexer {
 
@@ -31,8 +32,6 @@ public class XmlWoodStockIndexer {
 	private String lastReadVendorProductNumber;
 
 	private String tempVendorProductNumber;
-
-	private CatalogNode lastCatalogNode;
 
 	private String childBarcode = null;
 
@@ -113,10 +112,14 @@ public class XmlWoodStockIndexer {
 						}
 					}break;
 					case XMLEvent.CHARACTERS: {
-						handleCharacters();
+						if (insideMatchingNode) {
+							handleCharacters();
+						}
 					}break;
 					case XMLEvent.END_ELEMENT: {
-						handleEndElement();
+						if (insideMatchingNode) {
+							handleEndElement();
+						}
 					}break;
 				}
 			}
@@ -186,10 +189,7 @@ public class XmlWoodStockIndexer {
 	}
 
 	private void processDependency() {
-		lastCatalogNode.setRoot(false);
-
 		CatalogIdentifier catalogIdentifier = new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging);
-
 		Optional<CatalogNode> currentCatalogNode = nodeFactory.getNode(catalogIdentifier).stream().findFirst();
 		if (!currentCatalogNode.isPresent()) {
 			try {
@@ -198,33 +198,14 @@ public class XmlWoodStockIndexer {
 				e.printStackTrace();
 			}
 		}
-
 		CatalogNode catalogNode = currentCatalogNode.get();
-
-		checkCurrentNodeForVisitedDependencies(childBarcode, catalogNode );
+		checkCurrentNodeForVisitedDependencies(childBarcode, catalogNode);
 	}
 
 	private void determineDependency() {
 		if (checkTagExistence(childBarcodePath)) {
 			childBarcode = removeLeadingZeros(reader.getText().trim());
 		}
-
-//		if (config.getDependencyContainerTag().equalsIgnoreCase(getPreviousElement(config.getDependencyContainerTagStackDistance())) &&
-//				config.getDependencyTag().equalsIgnoreCase(tagStack.peek())) {
-//
-//			//TODO figure it out
-//			CatalogIdentifier catalogIdentifier = new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging);
-//			Optional<CatalogNode> currentCatalogNode = nodeFactory.getNode(catalogIdentifier).stream().findFirst();
-//			if (!currentCatalogNode.isPresent()) {
-//				try {
-//					throw new Exception("Can't find node for: " + catalogIdentifier.toString());
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//			}
-//
-//			checkCurrentNodeForVisitedDependencies(reader.getText().trim(), currentCatalogNode.get());
-//		}
 	}
 
 	private void checkCurrentNodeForUnfinishedDependencies(CatalogNode currentNode) {
@@ -301,16 +282,14 @@ public class XmlWoodStockIndexer {
 //		}
 	}
 
-	private void generateNode() {
+	private void generateNode(boolean isRoot) {
 		if (lastReadBarcode != null && lastReadVendorProductNumber != null && lastReadPackaging != null) {
 
-			CatalogNode catalogNode = nodeFactory.generateNode(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging), true);
+			CatalogNode catalogNode = nodeFactory.generateNode(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging), isRoot);
 
 			visitedNodes.put(lastReadBarcode, catalogNode);
 
 			checkCurrentNodeForUnfinishedDependencies(catalogNode);
-
-			lastCatalogNode = catalogNode;
 		}
 	}
 
@@ -320,11 +299,20 @@ public class XmlWoodStockIndexer {
 		}
 
 		if (config.getContainingTag().equals(reader.getName().getLocalPart())) {
-			generateNode();
-			if (childBarcode != null) {
+			boolean isRoot = isNull(childBarcode);
+			generateNode(isRoot);
+			if (!isRoot) {
 				processDependency();
 			}
+			resetValues();
 		}
+	}
+
+	private void resetValues() {
+		lastReadPackaging = null;
+		lastReadBarcode = null;
+		lastReadVendorProductNumber = null;
+		childBarcode = null;
 	}
 
 	private String getPreviousElement(int distance) {

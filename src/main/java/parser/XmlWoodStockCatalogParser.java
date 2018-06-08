@@ -204,6 +204,7 @@ public class XmlWoodStockCatalogParser {
 
 	private boolean handleEndElement(EndElement endElement) throws XMLStreamException {
 		if (config.getContainingTag().equalsIgnoreCase(endElement.getName().getLocalPart())) {
+			setLastNode();
 			nodeFactory.add(endElement);
 			return true;
 		}
@@ -253,8 +254,6 @@ public class XmlWoodStockCatalogParser {
 			lastReadVendorProductNumber = tempVendorProductNumber;
 
 			savedVendorProductNumberAttribute = null;
-
-			setLastNode();
 
 //			tempVendorProductNumber == null ? reader.getText() :
 		}

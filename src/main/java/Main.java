@@ -69,7 +69,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		XmlWoodStockConfig config = xmlWoodStockConfig()
-				.withFilePath(HARTMAN_FULL)
+				.withFilePath(FINAL)
 				.withEncoding(ENCODING)
 				.withContainingTag(CONTAINING_TAG)
 				.withUniqueIdentifierTag(UNIQUE_IDENTIFIER_TAG)
@@ -86,11 +86,11 @@ public class Main {
 				.withVendorProductNumberTypeValue(VPN_TYPE_VALUE)
 
 				// refactored values
-				.withBarcodeTag(BARCODE_TAG)
-				.withChildBarcodeTag(CHILD_BARCODE_TAG)
-				.withVendorProductNumberTag(VENDOR_PRODUCT_NUMBER_TAG)
-				.withVendorProductNumberTypeTagAndValue(VENDOR_PRODUCT_NUMBER_TYPE_TAG_AND_VALUE)
-				.withPackagingTag(PACKAGING_TAG)
+				.withBarcodeTag(BARCODE_TAG_2)
+				.withChildBarcodeTag(CHILD_BARCODE_TAG_2)
+				.withVendorProductNumberTag(VENDOR_PRODUCT_NUMBER_TAG_2)
+				.withVendorProductNumberTypeTagAndValue(VENDOR_PRODUCT_NUMBER_TYPE_TAG_AND_VALUE_2)
+				.withPackagingTag(PACKAGING_TAG_2)
 //				.withChildIdentifierTag(CHILD_IDENTIFIER_TAG)
 				.build();
 

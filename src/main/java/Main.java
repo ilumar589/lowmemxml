@@ -38,6 +38,10 @@ public class Main {
 
 	private static final String FINAL = "C:\\Users\\eduard.parvu\\Downloads\\180116_Original_Artikelkatalog_Mölnlycke_Health_Care_AG_DE_GS1-3.1_CH.xml";
 
+	private static final String ANOTHER_ONE = "C:\\Users\\eduard.parvu\\Downloads\\161011_Original_Artikelkatalog_Ambu_GmbH_D.xml";
+
+	private static final String GS1_NULL = "C:\\Users\\eduard.parvu\\Downloads\\180323_Original_Artikelkatalog_Mölnlycke_Health_Care_GmbH_GS1_2.3_D.xml";
+
 	private static final String ENCODING = "UTF8";
 	private static final String CONTAINING_TAG = "catalogueItem";
 	private static final String UNIQUE_IDENTIFIER_TAG = "gtin";
@@ -69,7 +73,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		XmlWoodStockConfig config = xmlWoodStockConfig()
-				.withFilePath(FINAL)
+				.withFilePath(GS1_NULL)
 				.withEncoding(ENCODING)
 				.withContainingTag(CONTAINING_TAG)
 				.withUniqueIdentifierTag(UNIQUE_IDENTIFIER_TAG)
@@ -86,11 +90,11 @@ public class Main {
 				.withVendorProductNumberTypeValue(VPN_TYPE_VALUE)
 
 				// refactored values
-				.withBarcodeTag(BARCODE_TAG_2)
-				.withChildBarcodeTag(CHILD_BARCODE_TAG_2)
-				.withVendorProductNumberTag(VENDOR_PRODUCT_NUMBER_TAG_2)
-				.withVendorProductNumberTypeTagAndValue(VENDOR_PRODUCT_NUMBER_TYPE_TAG_AND_VALUE_2)
-				.withPackagingTag(PACKAGING_TAG_2)
+				.withBarcodeTag(BARCODE_TAG)
+				.withChildBarcodeTag(CHILD_BARCODE_TAG)
+				.withVendorProductNumberTag(VENDOR_PRODUCT_NUMBER_TAG)
+				.withVendorProductNumberTypeTagAndValue(VENDOR_PRODUCT_NUMBER_TYPE_TAG_AND_VALUE)
+				.withPackagingTag(PACKAGING_TAG)
 //				.withChildIdentifierTag(CHILD_IDENTIFIER_TAG)
 				.build();
 
@@ -207,15 +211,18 @@ public class Main {
 
 		XmlCatalogIterator xmlCatalogIterator = new XmlCatalogIterator(config, indexer.getNodeMap());
 
+		int i = 0;
 		while (xmlCatalogIterator.hasNext()) {
 			CatalogNode catalogNode = xmlCatalogIterator.next();
-			System.out.println("***** NODE CONTENT *****");
-			System.out.println(catalogNode != null && catalogNode.getContent() != null ?
-					NodeUtil.toString(catalogNode.getContent(), true, true) : "Null for now");
-			System.out.println("**** NEXT NODE *******");
+			if (catalogNode != null && catalogNode.getContent() != null) {
+				System.out.println("***** NODE CONTENT *****");
+				System.out.println(NodeUtil.toString(catalogNode.getContent(), true, true));
+				System.out.println("NODE NUMBER: " + (++i) );
+				System.out.println("**** NEXT NODE *******");
+			}
 		}
 
-//		indexer.getNodeMap();
+		indexer.getNodeMap();
 
 		// ------------------ SAME AS IN MC PROJECT -------------------
 

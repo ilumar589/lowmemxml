@@ -34,6 +34,8 @@ public class XmlWoodStockConfig {
 
 	private String vendorProductNumberTypeValue;
 
+	private String vendorProductNumberIgnoredTypeValue;
+
 
 
 

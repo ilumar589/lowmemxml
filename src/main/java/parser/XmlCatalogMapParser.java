@@ -38,8 +38,6 @@ public class XmlCatalogMapParser {
 
     private int removedFromNodeTreeCounter = 0;
 
-    private CatalogNode lastReturnedNode = null;
-
     private DocumentBuilder builder;
 
 
@@ -93,7 +91,7 @@ public class XmlCatalogMapParser {
         // condition that takes into account separate zip files that
         // have been read but the node tree has not been cleared yet
         // when one file was read
-        return xmlWoodStockCatalogParser.hasNext() || lastReturnedNode != null;
+        return xmlWoodStockCatalogParser.hasNext() || !unfinishedRoots.isEmpty();
     }
 
 
@@ -109,45 +107,62 @@ public class XmlCatalogMapParser {
         CatalogNode catalogNode = getNode();
 
         if (isRootAndLeaf(catalogNode)) {
-
             if (catalogNode.getContent() == null) {
                 return null;
             }
 
-            XPath xPath = new XPathFactoryImpl().newXPath();
-
-            XPathExpression expression = null;
-            try {
-                expression = xPath.compile(T2);
-            } catch (XPathExpressionException e) {
-                e.printStackTrace();
-            }
-            try {
-                System.out.println("*** TEST XPATH ***");
-                System.out.println(expression.evaluate(catalogNode.getContent(), XPathConstants.STRING).toString());
-                System.out.println("*** END TEST XPATH ***");
-            } catch (XPathExpressionException e) {
-                e.printStackTrace();
-            }
+//            XPath xPath = new XPathFactoryImpl().newXPath();
+//
+//            XPathExpression expression = null;
+//            try {
+//                expression = xPath.compile(T2);
+//            } catch (XPathExpressionException e) {
+//                e.printStackTrace();
+//            }
+//            try {
+//                System.out.println("*** TEST XPATH ***");
+//                System.out.println(expression.evaluate(catalogNode.getContent(), XPathConstants.STRING).toString());
+//                System.out.println("*** END TEST XPATH ***");
+//            } catch (XPathExpressionException e) {
+//                e.printStackTrace();
+//            }
 
             return catalogNode;
         }
 
-        lastReturnedNode = catalogNode.isRoot() ? parseRootDependency(catalogNode, null) : null;
-        return lastReturnedNode;
+        if (isSingleNode(catalogNode)) {
+            return catalogNode;
+        }
+
+	    if (catalogNode.getContent() == null) {
+		    System.out.println();
+	    }
+
+        return  catalogNode.isRoot() ? parseRootDependency(catalogNode, null) : null;
     }
 
     private CatalogNode getNode() {
         // this reading has to be done every step in order
         // to progress with the node content inside the map
         // otherwise I would have used this expression in the final return statement
-        CatalogNode catalogNode = xmlWoodStockCatalogParser.readNode();
+        CatalogNode catalogNode = null;
 
-        visitNode(catalogNode.getUniqueIdentifier(), catalogNode.isRoot());
+        if (xmlWoodStockCatalogParser.hasNext()) {
+            catalogNode = xmlWoodStockCatalogParser.readNode();
+        }
+
+        if (catalogNode != null) {
+	        if (catalogNode.getContent() == null) {
+		        System.out.println();
+	        }
+            visitNode(catalogNode.getUniqueIdentifier(), catalogNode.isRoot());
+        }
 
         if (!unfinishedRoots.isEmpty()) {
-            //TODO figure it out
-            return catalogNodeMap.get(unfinishedRoots.peek()).stream().findFirst().get();
+            catalogNode =  catalogNodeMap.get(unfinishedRoots.peek()).stream().findFirst().get();
+	        if (catalogNode.getContent() == null) {
+		        System.out.println();
+	        }
         }
 
         return catalogNode;
@@ -168,6 +183,16 @@ public class XmlCatalogMapParser {
         return false;
     }
 
+    private boolean isSingleNode(CatalogNode catalogNode) {
+        if (!catalogNode.isRoot() && !catalogNode.hasChildren()) {
+            visitedNodes.remove(catalogNode.getUniqueIdentifier());
+
+            return true;
+        }
+
+        return false;
+    }
+
     private void visitNode(CatalogIdentifier nodeIdentifier, boolean isRoot) {
         if (isRoot) {
             unfinishedRoots.add(nodeIdentifier);
@@ -179,11 +204,7 @@ public class XmlCatalogMapParser {
     private CatalogNode parseRootDependency(CatalogNode currentNode, CatalogNode previousNode) {
         if (!currentNode.hasChildren() && visitedNodes.contains(currentNode.getUniqueIdentifier())) {
 
-            if (currentNode.getContent() == null || previousNode.getContent() == null) {
-                System.out.println();
-            }
-
-            currentNode.setContent(createNewUnifiedDocument(new CatalogNode(currentNode).getContent(), new CatalogNode(previousNode).getContent()));
+	        currentNode.setContent(createNewUnifiedDocument(currentNode.getContent(), previousNode.getContent()));
 
             XPath xPath = new XPathFactoryImpl().newXPath();
 
@@ -225,12 +246,13 @@ public class XmlCatalogMapParser {
             }
         }
 
-//        CatalogNode testCatalogNode = catalogNodeMap.get(childNodeUniqueIdentifier.get());
-//        if (testCatalogNode == null) {
-//            System.out.println("Node with identifier: " + childNodeUniqueIdentifier.get() + " is not present in map ");
-//        }
+	    CatalogNode newCurrentNode = catalogNodeMap.get(childNodeUniqueIdentifier.get()).stream().findFirst().get();
 
-        return parseRootDependency(catalogNodeMap.get(childNodeUniqueIdentifier.get()).stream().findFirst().get(), currentNode);
+        if (newCurrentNode.getContent() == null) {
+        	System.out.println();
+        }
+
+        return parseRootDependency(newCurrentNode, currentNode);
     }
 
 
@@ -242,7 +264,7 @@ public class XmlCatalogMapParser {
 
         Node root = combinedDocument.getFirstChild();
 
-        root.appendChild(previousNode);
+	    root.appendChild(previousNode);
         root.appendChild(currentNode);
 
         return root;

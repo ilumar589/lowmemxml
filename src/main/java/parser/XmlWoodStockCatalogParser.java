@@ -26,8 +26,6 @@ public class XmlWoodStockCatalogParser {
 
 	private Stack<String> tagStack;
 
-	private CatalogNode lastReadCatalogNode;
-
 	private String lastReadBarcode;
 
 	private String lastReadPackaging;
@@ -100,16 +98,14 @@ public class XmlWoodStockCatalogParser {
 	public CatalogNode readNode() {
 		nodeFactory.readyForNextNode();
 		boolean insideMatchingNode = false;
-
+		CatalogNode catalogNode = null;
 		try {
 			while (reader.hasNext()) {
 				XMLEvent event = (XMLEvent) reader.next();
 				if (event.isStartElement() && handleStartElement(event.asStartElement())) {
 					insideMatchingNode = true;
-				} else if (event.isEndElement() && handleEndElement(event.asEndElement())) {
-					lastReadCatalogNode.setContent(nodeFactory.createNode());
-					break;
-
+				} else if (event.isEndElement() && handleEndElement(event.asEndElement(), catalogNode)) {
+					return catalogNode;
 				} else if (insideMatchingNode) {
 					nodeFactory.add(event);
 					switch (event.getEventType()) {
@@ -124,7 +120,7 @@ public class XmlWoodStockCatalogParser {
 							}
 
 							/* save vendor product number tag type attribute */
-							if (checkTagExistence(vendorProductNumberTypePath) && type != null && vendorProductNumberTypeValue.toString().equalsIgnoreCase(type)) {
+							if (checkTagExistence(vendorProductNumberTypePath) && vendorProductNumberTypeValue.toString().equalsIgnoreCase(type)) {
 								savedVendorProductNumberAttribute = type;
 							}
 
@@ -144,7 +140,7 @@ public class XmlWoodStockCatalogParser {
 		} catch (XMLStreamException e) {
 			e.printStackTrace();
 		}
-		return lastReadCatalogNode;
+		return catalogNode;
 	}
 
 	public Multimap<CatalogIdentifier, CatalogNode> getCatalogNodeMap() {
@@ -182,30 +178,33 @@ public class XmlWoodStockCatalogParser {
 		if (!tagStack.isEmpty() && checkTagExistence(packagingPath)) {
 			lastReadPackaging = text;
 		}
-
-//		if (!tagStack.isEmpty() && config.getRootTag().equalsIgnoreCase(tagStack.peek())) {
-//			lastReadPackaging = text;
-//		}
 	}
 
-	private void setLastNode() {
+	private CatalogNode findCatalogNodeFromIndex() {
 		if (lastReadBarcode != null && lastReadVendorProductNumber != null && lastReadPackaging != null) {
-
-			//TODO figure it out
 			Optional<CatalogNode> foundNode = catalogNodeMap.get(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging)).stream().findFirst();
 
 			if (!foundNode.isPresent()) {
 				System.out.println("No node found for barcode: " + lastReadBarcode + " and vendor product number: " + lastReadVendorProductNumber);
+				throw new RuntimeException();
 			} else {
-				lastReadCatalogNode = foundNode.get();
+				return foundNode.get();
 			}
 		}
+
+		return null;
 	}
 
-	private boolean handleEndElement(EndElement endElement) throws XMLStreamException {
+	private boolean handleEndElement(EndElement endElement, CatalogNode catalogNode) throws XMLStreamException {
 		if (config.getContainingTag().equalsIgnoreCase(endElement.getName().getLocalPart())) {
-			setLastNode();
 			nodeFactory.add(endElement);
+
+			catalogNode = findCatalogNodeFromIndex();
+
+			if (catalogNode != null) {
+				catalogNode.setContent(nodeFactory.createNode());
+			}
+
 			return true;
 		}
 		return false;

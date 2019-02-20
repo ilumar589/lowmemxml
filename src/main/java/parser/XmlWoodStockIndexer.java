@@ -77,6 +77,8 @@ public class XmlWoodStockIndexer {
 		this.unfinishedDependencies = ArrayListMultimap.create();
 		this.visitedNodes = ArrayListMultimap.create();
 
+		setupTagPaths();
+
 		XMLInputFactory factory =  XMLInputFactory.newInstance();
 
 		try {
@@ -284,6 +286,16 @@ public class XmlWoodStockIndexer {
 
 	private void generateNode(boolean isRoot) {
 		if (lastReadBarcode != null && lastReadVendorProductNumber != null && lastReadPackaging != null) {
+
+			if (lastReadBarcode.equalsIgnoreCase("00612649182100") &&
+					lastReadVendorProductNumber.equalsIgnoreCase("KVLABKIT3") &&
+					lastReadPackaging.equalsIgnoreCase("CASE")) {
+				System.out.println();
+			}
+
+			if (lastReadVendorProductNumber.equalsIgnoreCase("KVLABKIT3")) {
+				System.out.println();
+			}
 
 			CatalogNode catalogNode = nodeFactory.generateNode(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging), isRoot);
 

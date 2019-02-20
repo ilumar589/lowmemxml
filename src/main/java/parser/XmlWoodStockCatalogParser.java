@@ -98,14 +98,15 @@ public class XmlWoodStockCatalogParser {
 	public CatalogNode readNode() {
 		nodeFactory.readyForNextNode();
 		boolean insideMatchingNode = false;
-		CatalogNode catalogNode = null;
 		try {
 			while (reader.hasNext()) {
 				XMLEvent event = (XMLEvent) reader.next();
 				if (event.isStartElement() && handleStartElement(event.asStartElement())) {
 					insideMatchingNode = true;
-				} else if (event.isEndElement() && handleEndElement(event.asEndElement(), catalogNode)) {
-					return catalogNode;
+				} else if (event.isEndElement() && handleEndElement(event.asEndElement())) {
+					for (CatalogNode catalogNode : findCatalogNodesFromIndex()) {
+						return catalogNode;
+					}
 				} else if (insideMatchingNode) {
 					nodeFactory.add(event);
 					switch (event.getEventType()) {
@@ -140,7 +141,7 @@ public class XmlWoodStockCatalogParser {
 		} catch (XMLStreamException e) {
 			e.printStackTrace();
 		}
-		return catalogNode;
+		return null;
 	}
 
 	public Multimap<CatalogIdentifier, CatalogNode> getCatalogNodeMap() {
@@ -180,29 +181,21 @@ public class XmlWoodStockCatalogParser {
 		}
 	}
 
-	private CatalogNode findCatalogNodeFromIndex() {
+	private Collection<CatalogNode> findCatalogNodesFromIndex() {
 		if (lastReadBarcode != null && lastReadVendorProductNumber != null && lastReadPackaging != null) {
-			Optional<CatalogNode> foundNode = catalogNodeMap.get(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging)).stream().findFirst();
-
-			if (!foundNode.isPresent()) {
-				System.out.println("No node found for barcode: " + lastReadBarcode + " and vendor product number: " + lastReadVendorProductNumber);
-				throw new RuntimeException();
-			} else {
-				return foundNode.get();
-			}
+			return catalogNodeMap.get(new CatalogIdentifier(lastReadBarcode, lastReadVendorProductNumber, lastReadPackaging));
 		}
 
-		return null;
+		return Collections.emptyList();
 	}
 
-	private boolean handleEndElement(EndElement endElement, CatalogNode catalogNode) throws XMLStreamException {
+	private boolean handleEndElement(EndElement endElement)  throws XMLStreamException {
 		if (config.getContainingTag().equalsIgnoreCase(endElement.getName().getLocalPart())) {
 			nodeFactory.add(endElement);
 
-			catalogNode = findCatalogNodeFromIndex();
-
-			if (catalogNode != null) {
-				catalogNode.setContent(nodeFactory.createNode());
+			Node data = nodeFactory.createNode();
+			for (CatalogNode catalogNode : findCatalogNodesFromIndex()) {
+				catalogNode.setContent(data);
 			}
 
 			return true;

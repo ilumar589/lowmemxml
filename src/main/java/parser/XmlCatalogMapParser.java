@@ -107,36 +107,8 @@ public class XmlCatalogMapParser {
         CatalogNode catalogNode = getNode();
 
         if (isRootAndLeaf(catalogNode)) {
-            if (catalogNode.getContent() == null) {
-                return null;
-            }
-
-//            XPath xPath = new XPathFactoryImpl().newXPath();
-//
-//            XPathExpression expression = null;
-//            try {
-//                expression = xPath.compile(T2);
-//            } catch (XPathExpressionException e) {
-//                e.printStackTrace();
-//            }
-//            try {
-//                System.out.println("*** TEST XPATH ***");
-//                System.out.println(expression.evaluate(catalogNode.getContent(), XPathConstants.STRING).toString());
-//                System.out.println("*** END TEST XPATH ***");
-//            } catch (XPathExpressionException e) {
-//                e.printStackTrace();
-//            }
-
             return catalogNode;
         }
-
-        if (isSingleNode(catalogNode)) {
-            return catalogNode;
-        }
-
-	    if (catalogNode.getContent() == null) {
-		    System.out.println();
-	    }
 
         return  catalogNode.isRoot() ? parseRootDependency(catalogNode, null) : null;
     }
@@ -152,17 +124,11 @@ public class XmlCatalogMapParser {
         }
 
         if (catalogNode != null) {
-	        if (catalogNode.getContent() == null) {
-		        System.out.println();
-	        }
             visitNode(catalogNode.getUniqueIdentifier(), catalogNode.isRoot());
         }
 
         if (!unfinishedRoots.isEmpty()) {
             catalogNode =  catalogNodeMap.get(unfinishedRoots.peek()).stream().findFirst().get();
-	        if (catalogNode.getContent() == null) {
-		        System.out.println();
-	        }
         }
 
         return catalogNode;
@@ -247,10 +213,6 @@ public class XmlCatalogMapParser {
         }
 
 	    CatalogNode newCurrentNode = catalogNodeMap.get(childNodeUniqueIdentifier.get()).stream().findFirst().get();
-
-        if (newCurrentNode.getContent() == null) {
-        	System.out.println();
-        }
 
         return parseRootDependency(newCurrentNode, currentNode);
     }

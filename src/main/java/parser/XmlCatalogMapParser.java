@@ -106,11 +106,14 @@ public class XmlCatalogMapParser {
     public CatalogNode readNode() {
         CatalogNode catalogNode = getNode();
 
-        if (isRootAndLeaf(catalogNode)) {
-            return catalogNode;
+        if (catalogNode != null) {
+            if (isRootAndLeaf(catalogNode)) {
+                return catalogNode;
+            }
+            return catalogNode.isRoot() ? parseRootDependency(catalogNode, null) : null;
         }
 
-        return  catalogNode.isRoot() ? parseRootDependency(catalogNode, null) : null;
+        return null;
     }
 
     private CatalogNode getNode() {
@@ -125,33 +128,40 @@ public class XmlCatalogMapParser {
 
         if (catalogNode != null) {
             visitNode(catalogNode.getUniqueIdentifier(), catalogNode.isRoot());
+            return  catalogNode;
         }
 
         if (!unfinishedRoots.isEmpty()) {
-            catalogNode =  catalogNodeMap.get(unfinishedRoots.peek()).stream().findFirst().get();
+
+            catalogNode = getRootToProcess();
         }
 
         return catalogNode;
     }
 
+    private CatalogNode getRootToProcess() {
+        Optional<CatalogNode> catalogNode = catalogNodeMap.get(unfinishedRoots.peek()).stream().findFirst();
+
+        if (!catalogNode.isPresent()) {
+            unfinishedRoots.pop();
+            return null;
+        }
+
+        return catalogNode.get();
+    }
+
     private boolean isRootAndLeaf(CatalogNode catalogNode) {
         if (catalogNode.isRoot() && !catalogNode.hasChildren()) {
+
+            if (catalogNode.getUniqueIdentifier().equals(new CatalogIdentifier("4049500486538", "9925143", "BASE_UNIT_OR_EACH"))) {
+                System.out.println();
+            }
 
             unfinishedRoots.pop();
 
             catalogNodeMap.remove(catalogNode.getUniqueIdentifier(), catalogNode);
 
             removedFromNodeTreeCounter ++;
-
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean isSingleNode(CatalogNode catalogNode) {
-        if (!catalogNode.isRoot() && !catalogNode.hasChildren()) {
-            visitedNodes.remove(catalogNode.getUniqueIdentifier());
 
             return true;
         }
@@ -189,6 +199,10 @@ public class XmlCatalogMapParser {
             }
 
             previousNode.removeDependency(currentNode.getUniqueIdentifier());
+
+            if (currentNode.getUniqueIdentifier().equals(new CatalogIdentifier("4049500486538", "9925143", "BASE_UNIT_OR_EACH"))) {
+                System.out.println();
+            }
 
             catalogNodeMap.remove(currentNode.getUniqueIdentifier(), currentNode);
 

@@ -44,6 +44,9 @@ public class XmlWoodStockCatalogParser {
 
 	private String savedVendorProductNumberAttribute;
 
+	private ArrayList<CatalogNode> nodesWithContents = new ArrayList<>();
+	private int currentNodesIndex = 0;
+
 	public XmlWoodStockCatalogParser(XmlWoodStockConfig config, Multimap<CatalogIdentifier, CatalogNode> catalogNodeMap) {
 		this.config = config;
 
@@ -99,13 +102,36 @@ public class XmlWoodStockCatalogParser {
 		nodeFactory.readyForNextNode();
 		boolean insideMatchingNode = false;
 		try {
+
+			// if there are multiple nodes from the same identifier with added content
+			// we will return them before reading the next nodes
+			if (!nodesWithContents.isEmpty()) {
+				if (currentNodesIndex == nodesWithContents.size()) {
+					nodesWithContents.clear();
+					currentNodesIndex = 0;
+				} else {
+					return  nodesWithContents.get(currentNodesIndex++);
+				}
+			} else {
+				currentNodesIndex = 0;
+			}
+
 			while (reader.hasNext()) {
 				XMLEvent event = (XMLEvent) reader.next();
 				if (event.isStartElement() && handleStartElement(event.asStartElement())) {
 					insideMatchingNode = true;
 				} else if (event.isEndElement() && handleEndElement(event.asEndElement())) {
-					for (CatalogNode catalogNode : findCatalogNodesFromIndex()) {
-						return catalogNode;
+					try {
+						if (currentNodesIndex == nodesWithContents.size()) {
+							nodesWithContents.clear();
+							currentNodesIndex = 0;
+							break;
+						}
+
+						return nodesWithContents.get(currentNodesIndex++);
+
+					} catch (IndexOutOfBoundsException e) {
+						return  null;
 					}
 				} else if (insideMatchingNode) {
 					nodeFactory.add(event);
@@ -196,6 +222,7 @@ public class XmlWoodStockCatalogParser {
 			Node data = nodeFactory.createNode();
 			for (CatalogNode catalogNode : findCatalogNodesFromIndex()) {
 				catalogNode.setContent(data);
+				nodesWithContents.add(catalogNode);
 			}
 
 			return true;

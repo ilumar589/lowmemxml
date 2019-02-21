@@ -29,9 +29,9 @@ public class XmlCatalogIterator implements Iterator<CatalogNode>{
 		return catalogNodeMapParser.getVisitedNodes();
 	}
 
-	public Stack<CatalogIdentifier> getUnfinishedRoots() {
-		return catalogNodeMapParser.getUnfinishedRoots();
-	}
+//	public Stack<CatalogIdentifier> getUnfinishedRoots() {
+//		return catalogNodeMapParser.getUnfinishedRoots();
+//	}
 
 
 	@Override
